@@ -1,0 +1,10 @@
+.vscode/*
+*.ini
+*.log
+*.so
+*.sh
+*.txt
+patch/*
+!patch/README.md
+backup/*
+!backup/README.md
