@@ -73,9 +73,25 @@ class Process extends \CommonDBTM
         $user = current($tu->find(['tickets_id' => $id, 'type' => 2], ['id'], 1));
         $p = new self;
         $proc = current($p->find(['users_id' => $user['users_id']], [], 1));
-        $item->data['##ticket.assigntouserphoto##'] = '<img height="48" src="'.$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].'/front/document.send.php?docid='.$proc['documents_id'].'" />';
-        $item->tag_descriptions['tag']['##ticket.assigntouserphoto##'] = [
-            'tag' => 'ticket.assigntouserphoto',
+        $item->data['##ticket.assigntouserphoto.small##'] = '<img height="48" src="'.$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].'/front/document.send.php?docid='.$proc['documents_id'].'" />';
+        $item->tag_descriptions['tag']['##ticket.assigntouserphoto.small##'] = [
+            'tag' => 'ticket.assigntouserphoto.small',
+            'value' => 1,
+            'label' => 'Фото специалиста',
+            'events' => 0,
+            'lang' => 1
+        ];
+        $item->data['##ticket.assigntouserphoto.medium##'] = '<img height="96" src="'.$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].'/front/document.send.php?docid='.$proc['documents_id'].'" />';
+        $item->tag_descriptions['tag']['##ticket.assigntouserphoto.medium##'] = [
+            'tag' => 'ticket.assigntouserphoto.medium',
+            'value' => 1,
+            'label' => 'Фото специалиста',
+            'events' => 0,
+            'lang' => 1
+        ];
+        $item->data['##ticket.assigntouserphoto.large##'] = '<img height="144" src="'.$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].'/front/document.send.php?docid='.$proc['documents_id'].'" />';
+        $item->tag_descriptions['tag']['##ticket.assigntouserphoto.large##'] = [
+            'tag' => 'ticket.assigntouserphoto.large',
             'value' => 1,
             'label' => 'Фото специалиста',
             'events' => 0,
@@ -94,13 +110,13 @@ class Process extends \CommonDBTM
     **/
     static function updateUser($item) {
         $doc = new \Document();
-        if(!isset($item->input['picture']) && $item->input['authtype'] == 3) {
+        if(!isset($item->input['picture']) && isset($item->input['authtype']) && $item->input['authtype'] == 3) {
             $item->input['picture'] = $item->syncLdapPhoto();
             print_r($file);
             self::updatePhotoByFilename($item->input['picture'], $item->input['id']);
             return;
         }
-        if(isset($item->fields['picture'])) {
+        if(isset($item->fields['picture']) && !isset($item->input['_picture'])) {
             self::updatePhotoByFilename($item->input['picture'], $item->input['id']);
             return;
         }
@@ -118,7 +134,7 @@ class Process extends \CommonDBTM
 
             // add or update users and docs relations
             $proc = new Process();
-            $proc->fields['users_id'] = $user['id'];
+            $proc->fields['users_id'] = $item->input['id'];
             $proc->fields['documents_id'] = $docID;
             if($curProc = current($proc->find(['users_id' => $item->input['id']], [], 1))) {
                 $proc->fields['id'] = $curProc['id'];
@@ -163,6 +179,37 @@ class Process extends \CommonDBTM
         } else {
             $proc->addToDB();
         }
+    }
+
+    static function roundImg($filename = '') {
+        
+        $image_s = imagecreatefromjpeg($filename);
+        $width = imagesx($image_s);
+        $height = imagesy($image_s);
+        
+        $newwidth = 1000;
+        $newheight = 1000;
+        
+        $image = imagecreatetruecolor($newwidth, $newheight);
+        imagealphablending($image, true);
+
+        imagecopyresampled($image, $image_s, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
+        //create masking
+        $mask = imagecreatetruecolor($newwidth, $newheight);
+        $transparent = imagecolorallocate($mask, 255, 0, 0);
+        imagecolortransparent($mask,$transparent);
+        imagefilledellipse($mask, $newwidth/2, $newheight/2, $newwidth-1, $newheight-1, $transparent);
+        
+        $red = imagecolorallocate($mask, 0, 0, 0);
+        imagecopymerge($image, $mask, 0, 0, 0, 0, $newwidth, $newheight, 100);
+        imagecolortransparent($image,$red);
+        imagefill($image, 0, 0, $red);
+
+        //output, save and free memory
+        header('Content-type: image/png');
+        imagepng($image,'/var/www/glpi/plugins/userphotoconv/output.png');
+        imagedestroy($image);
+        imagedestroy($mask);
     }
 }
 

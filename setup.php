@@ -28,7 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
-define('PLUGIN_USERPHOTOCONV_VERSION', '0.1.0');
+define('PLUGIN_USERPHOTOCONV_VERSION', '0.1.1');
 
 // Minimal GLPI version, inclusive
 define("PLUGIN_USERPHOTOCONV_MIN_GLPI_VERSION", "10.0.1");
@@ -36,6 +36,7 @@ define("PLUGIN_USERPHOTOCONV_MIN_GLPI_VERSION", "10.0.1");
 define("PLUGIN_USERPHOTOCONV_MAX_GLPI_VERSION", "10.0.99");
 
 use Glpi\Plugin\Hooks;
+use GlpiPlugin\Userphotoconv\Process;
 
 /**
  * Init hooks of the plugin.

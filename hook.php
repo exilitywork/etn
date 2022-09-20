@@ -59,7 +59,11 @@ function plugin_userphotoconv_install() {
       $tag = trim(Document::getImageTag(Rule::getUuid()), '#');
       $filename = mb_substr($file, strpos($file, '_') + 1);
       $prefix = mb_substr($file, strpos($file, '/') + 1, strpos($file, '_') - strpos($file, '/'));
-      copy(GLPI_PICTURE_DIR.'/'.$file, GLPI_TMP_DIR.'/'.$prefix.$filename);
+      if(file_exists(GLPI_PICTURE_DIR.'/'.$file)) {
+         copy(GLPI_PICTURE_DIR.'/'.$file, GLPI_TMP_DIR.'/'.$prefix.$filename);
+      } else {
+         continue;
+      }
 
       // search and add user photo as document
       $input['_filename']        = [$prefix.$filename];
