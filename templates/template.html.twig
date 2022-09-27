@@ -1,0 +1,151 @@
+{#
+ # -------------------------------------------------------------------------
+ # Extended Ticket's Notification plugin for GLPI
+ # -------------------------------------------------------------------------
+ #
+ # LICENSE
+ #
+ # This file is part of Extended Ticket's Notification.
+ #
+ # Extended Ticket's Notification is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation; either version 2 of the License, or
+ # any later version.
+ #
+ # Extended Ticket's Notification is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with Extended Ticket's Notification. If not, see <http://www.gnu.org/licenses/>.
+ # -------------------------------------------------------------------------
+ # @copyright Copyright (C) 2022-2022 by Oleg Кapeshko
+ # @license   GPLv2 https://www.gnu.org/licenses/gpl-2.0.html
+ # @link      https://github.com/exilitywork/etn
+ # -------------------------------------------------------------------------
+ #}
+{% if no_login %}
+    {% set theme = config('palette') %}
+    {% if css_files is not defined %}
+    {% set css_files = [
+        {'path': 'public/lib/base.css'},
+        {'path': 'css/palettes/' ~ theme ~ '.scss'}
+    ] %}
+    {# TODO : load hight contrast css #}
+    {% endif %}
+    {% if js_files is not defined %}
+    {% set js_files = [
+        {'path': 'public/lib/base.js'},
+        {'path': 'js/common.js'}
+    ] %}
+    {% endif %}
+
+    {{ include('layout/parts/head.html.twig') }}
+
+    <body class="welcome-anonymous">
+        <body class="welcome-anonymous">
+            <div class="page-anonymous">
+{% endif %}
+
+<div class="flex-fill d-flex flex-column justify-content-center py-4 mt-4">
+    {% set style = null %}
+    {% if card_md_width is defined %}
+        {% set style = 'max-width: 40rem' %}
+    {% endif %}
+    {% if card_bg_width is defined %}
+        {% set style = 'max-width: 60rem' %}
+    {% endif %}
+
+    <div class="container-tight py-6" {% if style is not null %}style="{{ style }}"{% endif %}>
+        <div class="text-center">
+            <div class="col-md">
+                <span class="glpi-logo mb-4" title="GLPI"></span>
+            </div>
+        </div>
+        <div class="card card-md">
+            <div class="card-body">
+                <div class="row justify-content-center">
+                    <div>
+                        {% if status < 0 %}
+                            <div class="card-header mb-4">
+                                <h2 class="mx-auto" style="text-align: center;">{{ __('Заявка еще не решена!', 'etn') }}<br><br>
+                                </h2>
+                            </div>
+                        {% endif %}
+                        {% if status > 0 %}
+                            <div class="card-header mb-4" style="border-bottom: 0; margin-bottom: 0rem !important; padding: 0rem 1.25rem;">
+                                <h2 class="mx-auto" style="text-align: center;">{{ __('Оценка выполнения заявки:', 'etn') }}<br><br>
+                                    {% if status == 1 %}
+                                        <i class="fas fa-1" style="font-size: 100px;"></i>
+                                    {% elseif status == 2 %}
+                                        <i class="fas fa-2" style="font-size: 100px;"></i>
+                                    {% elseif status == 3 %}
+                                        <i class="fas fa-3" style="font-size: 100px;"></i>
+                                    {% elseif status == 4 %}
+                                        <i class="fas fa-4" style="font-size: 100px;"></i>
+                                    {% elseif status == 5 %}
+                                        <i class="fas fa-5" style="font-size: 100px;"></i>
+                                    {% endif %}
+                                </h2>
+                            </div>
+                            {% if success_rate %}
+                                <div class="card-header mb-4">
+                                    <h2 class="mx-auto" style="text-align: center;">{{ __('Спасибо за ваш отклик!', 'etn') }}</h2>
+                                </div>
+                            {% endif %}
+                            {% if multiple_rate %}
+                                <div class="card-header mb-4">
+                                    <h2 class="mx-auto" style="text-align: center;">{{ __('Оценку больше менять нельзя!', 'etn') }}</h2>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                        {% if is_solved %}
+                            <div class="card-header mb-4">
+                                <h2 class="mx-auto" style="text-align: center;">{{ __('Заявка уже решена!', 'etn') }}</h2>
+                            </div>
+                        {% endif %}
+                        {% if success_priority_up %}
+                            <div class="card-header mb-4">
+                                <h2 class="mx-auto" style="text-align: center;">{{ __('Приоритет заявки повышен!', 'etn') }}</h2>
+                            </div>
+                        {% endif %}
+                        {% if multiple_priority_up %}
+                            <div class="card-header mb-4">
+                                <h2 class="mx-auto" style="text-align: center;">{{ __('Приоритет заявки максимальный!', 'etn') }}</h2>
+                            </div>
+                        {% endif %}
+                        {% if no_login %}
+                            <div>
+                                <button name="login" class="btn btn-primary w-100" tabindex="3" onclick="location.href = '{{ login_page }}';">
+                                    {{ __('Sign in') }}
+                                </button>
+                            </div>
+                        {% else %}
+                            <div>
+                                <button name="to-ticket" class="btn btn-primary w-100" tabindex="3" onclick="location.href = '{{ ticket_url }}';">
+                                    {{ __('Перейти к заявке', 'etn') }}
+                                </button>
+                            </div>
+                        {% endif %}
+                        {% if error %}
+                            <div class="card-header mb-4">
+                                <h2 class="mx-auto" style="text-align: center;">{{ __('Возникла ошибка! Обратитесь к системному администратору!', 'etn') }}</h2>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center text-muted mt-3">
+            {{ copyright_message|raw }}
+        </div>
+    </div>
+</div>
+
+{% if no_login %}
+            </div>
+        </body>
+    </html>
+{% endif %}

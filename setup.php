@@ -2,41 +2,41 @@
 
 /**
  * -------------------------------------------------------------------------
- * userphotoconv plugin for GLPI
+ * Extended Ticket's Notification plugin for GLPI
  * -------------------------------------------------------------------------
  *
  * LICENSE
  *
- * This file is part of userphotoconv.
+ * This file is part of Extended Ticket's Notification.
  *
- * userphotoconv is free software; you can redistribute it and/or modify
+ * Extended Ticket's Notification is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * any later version.
  *
- * userphotoconv is distributed in the hope that it will be useful,
+ * Extended Ticket's Notification is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with userphotoconv. If not, see <http://www.gnu.org/licenses/>.
+ * along with Extended Ticket's Notification. If not, see <http://www.gnu.org/licenses/>.
  * -------------------------------------------------------------------------
  * @copyright Copyright (C) 2022-2022 by Oleg Кapeshko
  * @license   GPLv2 https://www.gnu.org/licenses/gpl-2.0.html
- * @link      https://github.com/exilitywork/userphotoconv
+ * @link      https://github.com/exilitywork/etn
  * -------------------------------------------------------------------------
  */
 
-define('PLUGIN_USERPHOTOCONV_VERSION', '0.1.1');
+define('PLUGIN_ETN_VERSION', '0.3.0');
 
 // Minimal GLPI version, inclusive
-define("PLUGIN_USERPHOTOCONV_MIN_GLPI_VERSION", "10.0.1");
+define("PLUGIN_ETN_MIN_GLPI_VERSION", "10.0.1");
 // Maximum GLPI version, exclusive
-define("PLUGIN_USERPHOTOCONV_MAX_GLPI_VERSION", "10.0.99");
+define("PLUGIN_ETN_MAX_GLPI_VERSION", "10.0.99");
 
 use Glpi\Plugin\Hooks;
-use GlpiPlugin\Userphotoconv\Process;
+use GlpiPlugin\Etn\Process;
 
 /**
  * Init hooks of the plugin.
@@ -44,15 +44,15 @@ use GlpiPlugin\Userphotoconv\Process;
  *
  * @return void
  */
-function plugin_init_userphotoconv()
+function plugin_init_etn()
 {
     global $PLUGIN_HOOKS;
 
-    $PLUGIN_HOOKS['csrf_compliant']['userphotoconv'] = true;
+    $PLUGIN_HOOKS['csrf_compliant']['etn'] = true;
 
-    $PLUGIN_HOOKS['post_show_item']['userphotoconv'] = ['GlpiPlugin\Userphotoconv\Process', 'postShowItem'];
-    $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['userphotoconv'] = ['User' => ['GlpiPlugin\Userphotoconv\Process', 'updateUser']];
-    $PLUGIN_HOOKS['item_get_datas']['userphotoconv'] = ['NotificationTargetTicket' => ['GlpiPlugin\Userphotoconv\Process', 'modifyNotification']];
+    $PLUGIN_HOOKS['post_show_item']['etn'] = ['GlpiPlugin\Etn\Process', 'postShowItem'];
+    $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['etn'] = ['User' => ['GlpiPlugin\Etn\Process', 'updateUser']];
+    $PLUGIN_HOOKS['item_get_datas']['etn'] = ['NotificationTargetTicket' => ['GlpiPlugin\Etn\Process', 'modifyNotification']];
 }
 
 /**
@@ -61,18 +61,18 @@ function plugin_init_userphotoconv()
  *
  * @return array
  */
-function plugin_version_userphotoconv()
+function plugin_version_etn()
 {
     return [
-        'name'           => 'UserPhotoConv',
-        'version'        => PLUGIN_USERPHOTOCONV_VERSION,
+        'name'           => 'Extended Ticket\'s Notification',
+        'version'        => PLUGIN_ETN_VERSION,
         'author'         => '<a href="https://www.linkedin.com/in/oleg-kapeshko-webdev-admin/">Oleg Kapeshko</a>',
         'license'        => 'GPL-2.0-or-later',
-        'homepage'       => 'https://github.com/exilitywork/userphotoconv',
+        'homepage'       => 'https://github.com/exilitywork/etn',
         'requirements'   => [
             'glpi' => [
-                'min' => PLUGIN_USERPHOTOCONV_MIN_GLPI_VERSION,
-                'max' => PLUGIN_USERPHOTOCONV_MAX_GLPI_VERSION,
+                'min' => PLUGIN_ETN_MIN_GLPI_VERSION,
+                'max' => PLUGIN_ETN_MAX_GLPI_VERSION,
             ]
         ]
     ];

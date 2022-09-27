@@ -2,44 +2,44 @@
 
 /**
  * -------------------------------------------------------------------------
- * userphotoconv plugin for GLPI
+ * Extended Ticket's Notification plugin for GLPI
  * -------------------------------------------------------------------------
  *
  * LICENSE
  *
- * This file is part of userphotoconv.
+ * This file is part of Extended Ticket's Notification.
  *
- * userphotoconv is free software; you can redistribute it and/or modify
+ * Extended Ticket's Notification is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * any later version.
  *
- * userphotoconv is distributed in the hope that it will be useful,
+ * Extended Ticket's Notification is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with userphotoconv. If not, see <http://www.gnu.org/licenses/>.
+ * along with Extended Ticket's Notification. If not, see <http://www.gnu.org/licenses/>.
  * -------------------------------------------------------------------------
  * @copyright Copyright (C) 2022-2022 by Oleg Кapeshko
  * @license   GPLv2 https://www.gnu.org/licenses/gpl-2.0.html
- * @link      https://github.com/exilitywork/userphotoconv
+ * @link      https://github.com/exilitywork/etn
  * -------------------------------------------------------------------------
  */
 
-use GlpiPlugin\Userphotoconv\Process;
+use GlpiPlugin\Etn\Process;
 
 /**
  * Plugin uninstall process
  *
  * @return boolean
  */
-function plugin_userphotoconv_install() {
+function plugin_etn_install() {
    global $DB;
 
    $create_table_query = "
-      CREATE TABLE IF NOT EXISTS `glpi_plugin_userphotoconv_processes`
+      CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_processes`
       (
          `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
          `users_id` INT UNSIGNED NOT NULL,
@@ -47,6 +47,20 @@ function plugin_userphotoconv_install() {
          PRIMARY KEY (`id`),
          KEY (`users_id`),
          KEY (`documents_id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+   ";
+   $DB->query($create_table_query) or die($DB->error());
+
+   $create_table_query = "
+      CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_ratings`
+      (
+         `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+         `tickets_id` INT UNSIGNED NOT NULL,
+         `status` BOOL DEFAULT 0,
+         `date_create` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+         `date_mod` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+         PRIMARY KEY (`id`),
+         KEY (`tickets_id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
    ";
    $DB->query($create_table_query) or die($DB->error());
@@ -96,10 +110,16 @@ function plugin_userphotoconv_install() {
  *
  * @return boolean
  */
-function plugin_userphotoconv_uninstall() {
+function plugin_etn_uninstall() {
    global $DB;
-   if ($DB->tableExists('glpi_plugin_userphotoconv_processes')) {
-      $DB->query('DROP TABLE `glpi_plugin_userphotoconv_processes`');
+
+   if ($DB->tableExists('glpi_plugin_etn_processes')) {
+      //$DB->query('DROP TABLE `glpi_plugin_etn_processes`');
    }
+
+   if ($DB->tableExists('glpi_plugin_etn_ratings')) {
+      //$DB->query('DROP TABLE `glpi_plugin_etn_ratings`');
+   }
+
    return true;
 }
