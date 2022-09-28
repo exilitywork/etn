@@ -66,6 +66,20 @@ class Process extends \CommonDBTM
      * @return $item
     **/
     static function modifyNotification($item) {
+
+        if(!(isset($_SERVER['REQUEST_SCHEME']) && isset($_SERVER['SERVER_NAME']))) {
+            $item->data['##ticket.assigntouserphoto.small##'] = '';
+            $item->data['##ticket.assigntouserphoto.medium##'] = '';
+            $item->data['##ticket.assigntouserphoto.large##'] = '';
+            $item->data['##ticket.assigntousertitle##'] = '';
+            $item->data['##ticket.ticket.rating.1##'] = '';
+            $item->data['##ticket.ticket.rating.2##'] = '';
+            $item->data['##ticket.ticket.rating.3##'] = '';
+            $item->data['##ticket.ticket.rating.4##'] = '';
+            $item->data['##ticket.ticket.rating.5##'] = '';
+            $item->data['##ticket.ticket.priorityup##'] = '';
+            return $item;
+        }
         
         $assigned = $item->data['##ticket.assigntousers##'];
         $item->data['##ticket.assigntousers##'] = explode(',', $assigned)[0];
@@ -143,7 +157,7 @@ class Process extends \CommonDBTM
         $ts = new \TicketSatisfaction();
         if($ticket = current($ts->find(['tickets_id' => $tickets_id], [], 1))) {
             $ts->getFromDB($ticket['id']);
-            $ts->fields['tickets_id'] = $ticket['id'];
+            $ts->fields['id'] = $ticket['id'];
             $ts->fields['tickets_id'] = $tickets_id;
             $ts->fields['date_begin'] = date('Y-m-d H:i:s');
             $ts->fields['satisfaction'] = isset($ts->fields['satisfaction']) ? $ts->fields['satisfaction'] : 5;
