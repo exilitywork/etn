@@ -28,7 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
-define('PLUGIN_ETN_VERSION', '0.3.0');
+define('PLUGIN_ETN_VERSION', '0.4.0');
 
 // Minimal GLPI version, inclusive
 define("PLUGIN_ETN_MIN_GLPI_VERSION", "10.0.1");
@@ -47,12 +47,13 @@ use GlpiPlugin\Etn\Process;
 function plugin_init_etn()
 {
     global $PLUGIN_HOOKS;
-
+    
     $PLUGIN_HOOKS['csrf_compliant']['etn'] = true;
 
-    $PLUGIN_HOOKS['post_show_item']['etn'] = ['GlpiPlugin\Etn\Process', 'postShowItem'];
+    //$PLUGIN_HOOKS['post_show_item']['etn'] = ['GlpiPlugin\Etn\Process', 'postShowItem'];
     $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['etn'] = ['User' => ['GlpiPlugin\Etn\Process', 'updateUser']];
     $PLUGIN_HOOKS['item_get_datas']['etn'] = ['NotificationTargetTicket' => ['GlpiPlugin\Etn\Process', 'modifyNotification']];
+    //$PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['etn'] = ['GlpiPlugin\Etn\Process', 'postShowItem'];
 }
 
 /**

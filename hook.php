@@ -29,6 +29,7 @@
  */
 
 use GlpiPlugin\Etn\Process;
+use GlpiPlugin\Etn\Config;
 
 /**
  * Plugin uninstall process
@@ -64,6 +65,21 @@ function plugin_etn_install() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
    ";
    $DB->query($create_table_query) or die($DB->error());
+
+   $create_table_query = "
+      CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_configs`
+      (
+         `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+         `ldap_id` INT UNSIGNED NOT NULL,
+         `ldap_photo_field` VARCHAR(255),
+         PRIMARY KEY (`id`),
+         KEY (`ldap_id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+   ";
+   $DB->query($create_table_query) or die($DB->error());
+
+   $user = new \User();
+   Config::updateConfig();
 
    $user = new \User();
    $users = $user->find();
@@ -119,6 +135,10 @@ function plugin_etn_uninstall() {
 
    if ($DB->tableExists('glpi_plugin_etn_ratings')) {
       //$DB->query('DROP TABLE `glpi_plugin_etn_ratings`');
+   }
+
+   if ($DB->tableExists('glpi_plugin_etn_configs')) {
+      //$DB->query('DROP TABLE `glpi_plugin_etn_configs`');
    }
 
    return true;

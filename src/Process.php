@@ -56,6 +56,9 @@ class Process extends \CommonDBTM
      *
     **/
     static function postShowItem($item) {
+        //print_r($item);
+        //die();
+        return $item;
     }
 
     /**
@@ -237,6 +240,8 @@ class Process extends \CommonDBTM
      * @return bool
     **/
     static function updateUser($item) {
+        Config::switchConfig($item);
+        
         $doc = new \Document();
         // update photo with LDAP auth
         if(!isset($item->input['picture']) && isset($item->input['authtype']) && $item->input['authtype'] == 3) {
