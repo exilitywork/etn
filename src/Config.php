@@ -82,7 +82,7 @@ class Config extends \CommonDBTM
     static function switchConfig($item) {
         $configLDAP = new \AuthLDAP();
         $configLDAP->getFromDB($item->fields['auths_id']);        
-        if(in_array(9, \Profile_User::getUserProfiles($item->fields['id']))) {
+        if(in_array(6, \Profile_User::getUserProfiles($item->fields['id']))) {
             $configLDAP->fields['picture_field'] = '';
             $configLDAP->updateInDB(array_keys($configLDAP->fields));
         } else {
