@@ -160,9 +160,10 @@ class Process extends \CommonDBTM
             // add to notification's template tags of assigned user's photo
             $p = new self;
             $proc = current($p->find(['users_id' => $assign['users_id']], [], 1));
-            $item->data['##ticket.assigntouserphoto.small##'] = '<img height="48" width="48" src="'.$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].'/front/document.send.php?docid='.$proc['documents_id'].'" />';
-            $item->data['##ticket.assigntouserphoto.medium##'] = '<img height="96" width="96" src="'.$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].'/front/document.send.php?docid='.$proc['documents_id'].'" />';
-            $item->data['##ticket.assigntouserphoto.large##'] = '<img height="144" width="144" src="'.$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].'/front/document.send.php?docid='.$proc['documents_id'].'" />';
+            $url = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].'/front/document.send.php?docid='.$proc['documents_id'];
+            $item->data['##ticket.assigntouserphoto.small##'] = '<img height="48" width="48" src="'.$url.'" />';
+            $item->data['##ticket.assigntouserphoto.medium##'] = '<img height="96" width="96" src="'.$url.'" />';
+            $item->data['##ticket.assigntouserphoto.large##'] = '<img height="144" width="144" src="'.$url.'" />';
             
             // add to notification's template tag of assigned user's title
             $u = new \User();
