@@ -102,7 +102,7 @@ class Process extends \CommonDBTM
             'events'    => 0,
             'lang'      => 1
         ];
-        $item->data['##ticket.ticket.rating.0##'] = '';
+        $item->data['##ticket.rating.0##'] = '';
         $item->tag_descriptions['tag']['##ticket.rating.0##'] = [
             'tag'       => 'ticket.rating.0',
             'value'     => 1,
@@ -110,7 +110,7 @@ class Process extends \CommonDBTM
             'events'    => 0,
             'lang'      => 1
         ];
-        $item->data['##ticket.ticket.rating.1##'] = '';
+        $item->data['##ticket.rating.1##'] = '';
         $item->tag_descriptions['tag']['##ticket.rating.1##'] = [
             'tag'       => 'ticket.rating.1',
             'value'     => 1,
@@ -118,7 +118,7 @@ class Process extends \CommonDBTM
             'events'    => 0,
             'lang'      => 1
         ];
-        $item->data['##ticket.ticket.rating.2##'] = '';
+        $item->data['##ticket.rating.2##'] = '';
         $item->tag_descriptions['tag']['##ticket.rating.2##'] = [
             'tag'       => 'ticket.rating.2',
             'value'     => 1,
@@ -126,7 +126,7 @@ class Process extends \CommonDBTM
             'events'    => 0,
             'lang'      => 1
         ];
-        $item->data['##ticket.ticket.rating.3##'] = '';
+        $item->data['##ticket.rating.3##'] = '';
         $item->tag_descriptions['tag']['##ticket.rating.3##'] = [
             'tag'       => 'ticket.rating.3',
             'value'     => 1,
@@ -134,7 +134,7 @@ class Process extends \CommonDBTM
             'events'    => 0,
             'lang'      => 1
         ];
-        $item->data['##ticket.ticket.rating.4##'] = '';
+        $item->data['##ticket.rating.4##'] = '';
         $item->tag_descriptions['tag']['##ticket.rating.4##'] = [
             'tag'       => 'ticket.rating.4',
             'value'     => 1,
@@ -142,7 +142,7 @@ class Process extends \CommonDBTM
             'events'    => 0,
             'lang'      => 1
         ];
-        $item->data['##ticket.ticket.rating.5##'] = '';
+        $item->data['##ticket.rating.5##'] = '';
         $item->tag_descriptions['tag']['##ticket.rating.5##'] = [
             'tag'       => 'ticket.rating.5',
             'value'     => 1,
@@ -150,7 +150,7 @@ class Process extends \CommonDBTM
             'events'    => 0,
             'lang'      => 1
         ];
-        $item->data['##ticket.ticket.priorityup##'] = '';
+        $item->data['##ticket.priorityup##'] = '';
         $item->tag_descriptions['tag']['##ticket.priorityup##'] = [
             'tag'       => 'ticket.priorityup',
             'value'     => 1,
