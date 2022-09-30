@@ -102,6 +102,14 @@ class Process extends \CommonDBTM
             'events'    => 0,
             'lang'      => 1
         ];
+        $item->data['##ticket.ticket.rating.0##'] = '';
+        $item->tag_descriptions['tag']['##ticket.rating.0##'] = [
+            'tag'       => 'ticket.rating.0',
+            'value'     => 1,
+            'label'     => __('Оценка 0', 'etn'),
+            'events'    => 0,
+            'lang'      => 1
+        ];
         $item->data['##ticket.ticket.rating.1##'] = '';
         $item->tag_descriptions['tag']['##ticket.rating.1##'] = [
             'tag'       => 'ticket.rating.1',
@@ -219,14 +227,22 @@ class Process extends \CommonDBTM
             $input['date_create'] = date('Y-m-d H:i:s');
             $r->add($input);
         }
+        /*$item->data['##ticket.rating.0##'] = '<a href="'.$url.'&rating=0" style="'.$style.'">1</a>';
         $item->data['##ticket.rating.1##'] = '<a href="'.$url.'&rating=1" style="'.$style.'">1</a>';
         $item->data['##ticket.rating.2##'] = '<a href="'.$url.'&rating=2" style="'.$style.'">2</a>';
         $item->data['##ticket.rating.3##'] = '<a href="'.$url.'&rating=3" style="'.$style.'">3</a>';
         $item->data['##ticket.rating.4##'] = '<a href="'.$url.'&rating=4" style="'.$style.'">4</a>';
-        $item->data['##ticket.rating.5##'] = '<a href="'.$url.'&rating=5" style="'.$style.'">5</a>';
+        $item->data['##ticket.rating.5##'] = '<a href="'.$url.'&rating=5" style="'.$style.'">5</a>';*/
+        $item->data['##ticket.rating.0##'] = $url.'&rating=0';
+        $item->data['##ticket.rating.1##'] = $url.'&rating=1';
+        $item->data['##ticket.rating.2##'] = $url.'&rating=2';
+        $item->data['##ticket.rating.3##'] = $url.'&rating=3';
+        $item->data['##ticket.rating.4##'] = $url.'&rating=4';
+        $item->data['##ticket.rating.5##'] = $url.'&rating=5';
         
         // add to notification's template tag of ticket's priority up
-        $item->data['##ticket.priorityup##'] = '<a href="'.$url.'&priority_up=4" style="'.$style.'">'.__('Повысить приоритет', 'etn').'</a>';
+        //$item->data['##ticket.priorityup##'] = '<a href="'.$url.'&priority_up=4" style="'.$style.'">'.__('Повысить приоритет', 'etn').'</a>';
+        $item->data['##ticket.priorityup##'] = $url.'&priority_up=4';
         
         
         return $item;
