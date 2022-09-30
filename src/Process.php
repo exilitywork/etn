@@ -185,7 +185,7 @@ class Process extends \CommonDBTM
         }
 
         // add to notification's template tags of solved ticket's ratings
-        $style = '
+        /*$style = '
                 display:inline-block;
                 background:#3200F0;
                 color:#ffffff;
@@ -199,7 +199,7 @@ class Process extends \CommonDBTM
                 padding:10px 15px;
                 mso-padding-alt:0px;
                 border-radius:3px;
-            ';
+            ';*/
         $url = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].'/plugins/etn/front/status.php?'.'users_id='.$requester['users_id'].'&tickets_id='.$tickets_id;
 
         $ts = new \TicketSatisfaction();
