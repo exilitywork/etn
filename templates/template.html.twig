@@ -73,31 +73,37 @@
                                 </h2>
                             </div>
                         {% endif %}
-                        {% if status > 0 %}
-                            <div class="card-header mb-4" style="border-bottom: 0; margin-bottom: 0rem !important; padding: 0rem 1.25rem;">
-                                <h2 class="mx-auto" style="text-align: center;">{{ __('Оценка выполнения заявки:', 'etn') }}<br><br>
-                                    {% if status == 1 %}
-                                        <i class="fas fa-1" style="font-size: 100px;"></i>
-                                    {% elseif status == 2 %}
-                                        <i class="fas fa-2" style="font-size: 100px;"></i>
-                                    {% elseif status == 3 %}
-                                        <i class="fas fa-3" style="font-size: 100px;"></i>
-                                    {% elseif status == 4 %}
-                                        <i class="fas fa-4" style="font-size: 100px;"></i>
-                                    {% elseif status == 5 %}
-                                        <i class="fas fa-5" style="font-size: 100px;"></i>
+                        {% if not success_priority_up %}
+                            {% if not multiple_priority_up %}
+                                {% if status > 0 %}
+                                    <div class="card-header mb-4" style="border-bottom: 0; margin-bottom: 0rem !important; padding: 0rem 1.25rem;">
+                                        <h2 class="mx-auto" style="text-align: center;">{{ __('Оценка выполнения заявки:', 'etn') }}<br><br>
+                                            {% if status == 1 %}
+                                                <i class="fas fa-1" style="font-size: 100px;"></i>
+                                            {% elseif status == 2 %}
+                                                <i class="fas fa-2" style="font-size: 100px;"></i>
+                                            {% elseif status == 3 %}
+                                                <i class="fas fa-3" style="font-size: 100px;"></i>
+                                            {% elseif status == 4 %}
+                                                <i class="fas fa-4" style="font-size: 100px;"></i>
+                                            {% elseif status == 5 %}
+                                                <i class="fas fa-5" style="font-size: 100px;"></i>
+                                            {% elseif status == 0 %}
+                                                <i class="fas fa-0" style="font-size: 100px;"></i>
+                                            {% endif %}
+                                        </h2>
+                                    </div>
+                                    {% if success_rate %}
+                                        <div class="card-header mb-4">
+                                            <h2 class="mx-auto" style="text-align: center;">{{ __('Спасибо за ваш отклик!', 'etn') }}</h2>
+                                        </div>
                                     {% endif %}
-                                </h2>
-                            </div>
-                            {% if success_rate %}
-                                <div class="card-header mb-4">
-                                    <h2 class="mx-auto" style="text-align: center;">{{ __('Спасибо за ваш отклик!', 'etn') }}</h2>
-                                </div>
-                            {% endif %}
-                            {% if multiple_rate %}
-                                <div class="card-header mb-4">
-                                    <h2 class="mx-auto" style="text-align: center;">{{ __('Оценку больше менять нельзя!', 'etn') }}</h2>
-                                </div>
+                                    {% if multiple_rate %}
+                                        <div class="card-header mb-4">
+                                            <h2 class="mx-auto" style="text-align: center;">{{ __('Оценку больше менять нельзя!', 'etn') }}</h2>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
                             {% endif %}
                         {% endif %}
                         {% if is_solved %}

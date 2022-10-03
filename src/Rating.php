@@ -48,5 +48,21 @@ class Rating extends \CommonDBTM
     {
         return __('Rating', 'etn');
     }
+
+    /**
+     *  @see CommonGLPI::getMenuContent()
+     *
+     *  @since version 0.5.6
+    **/
+    static function getMenuContent() {
+        global $CFG_GLPI;
+
+        $menu = array();
+
+        $menu['title']  = __('Оценки', 'etn');
+        $menu['icon']   = 'far fa-star';
+        $menu['page']   = '/plugins/etn/front/rating.php';
+        return $menu;
+}	
 }
 ?>

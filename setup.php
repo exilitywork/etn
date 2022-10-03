@@ -38,6 +38,8 @@ define("PLUGIN_ETN_MAX_GLPI_VERSION", "10.0.99");
 use Glpi\Plugin\Hooks;
 use GlpiPlugin\Etn\Process;
 
+require_once "vendor/autoload.php";
+
 /**
  * Init hooks of the plugin.
  * REQUIRED
@@ -46,9 +48,32 @@ use GlpiPlugin\Etn\Process;
  */
 function plugin_init_etn()
 {
-    global $PLUGIN_HOOKS;
+    global $PLUGIN_HOOKS, $CFG_GLPI;
     
     $PLUGIN_HOOKS['csrf_compliant']['etn'] = true;
+
+    // bot begin ------------
+    /*$token = '857161802:AAHT5Pb60LwtqNiR7faOKS_kY_vBmoTxY2I';
+        $bot = new \TelegramBot\Api\BotApi('857161802:AAHT5Pb60LwtqNiR7faOKS_kY_vBmoTxY2I');
+    $chatId = '383009633';
+    $messageText = 'TEST';
+        //$bot->sendMessage($chatId, $messageText);
+        try {
+            //print_r($bot->getUpdates());
+            //die();
+
+        
+        } catch (\TelegramBot\Api\Exception $e) {
+            $e->getMessage();
+        }*/
+
+    // bot end ---------------
+    $PLUGIN_HOOKS['add_css']['etn'][]="vendor/DataTables/datatables.min.css";
+    $PLUGIN_HOOKS['add_javascript']['etn'] = "vendor/DataTables/datatables.min.js";
+    $PLUGIN_HOOKS["menu_toadd"]['etn'] = array('helpdesk'  => 'GlpiPlugin\Etn\Rating');
+    //$PLUGIN_HOOKS['config_page']['etn'] = 'front/index.php';
+    //print_r($CFG_GLPI);
+    //die();
 
     //$PLUGIN_HOOKS['post_show_item']['etn'] = ['GlpiPlugin\Etn\Process', 'postShowItem'];
     $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['etn'] = ['User' => ['GlpiPlugin\Etn\Process', 'updateUser']];

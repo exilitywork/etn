@@ -69,6 +69,7 @@ class Process extends \CommonDBTM
      * @return $item
     **/
     static function modifyNotification($item) {
+        global $CFG_GLPI;
 
         $item->data['##ticket.assigntouserphoto.small##'] = '';
         $item->tag_descriptions['tag']['##ticket.assigntouserphoto.small##'] = [
@@ -200,8 +201,9 @@ class Process extends \CommonDBTM
                 mso-padding-alt:0px;
                 border-radius:3px;
             ';*/
-        $url = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].'/plugins/etn/front/status.php?'.'users_id='.$requester['users_id'].'&tickets_id='.$tickets_id;
 
+        $url = $CFG_GLPI['url_base'].'/plugins/etn/front/status.php?'.'users_id='.$requester['users_id'].'&tickets_id='.$tickets_id;
+        
         $ts = new \TicketSatisfaction();
         if($ticket = current($ts->find(['tickets_id' => $tickets_id], [], 1))) {
             $ts->getFromDB($ticket['id']);
