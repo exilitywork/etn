@@ -110,7 +110,7 @@ $req = $DB->request("
     LEFT JOIN `glpi_ticketsatisfactions` ON (`glpi_tickets`.`id` = `glpi_ticketsatisfactions`.`tickets_id`) 
     WHERE 
         `glpi_tickets`.`is_deleted` = '0' 
-        AND `glpi_ticketsatisfactions`.`satisfaction` > '0' 
+        AND `glpi_ticketsatisfactions`.`satisfaction` IS NOT NULL 
         AND `glpi_tickets_users`.`type` = '2' 
         AND `glpi_tickets`.`closedate` > '".$_GET['date1'].' 00:00:00'."'
         AND `glpi_tickets`.`closedate` < '".$_GET['date2'].' 23:59:59'."' 

@@ -160,7 +160,7 @@ class Process extends \CommonDBTM
             'lang'      => 1
         ];
 
-        if(!(isset($_SERVER['REQUEST_SCHEME']) && isset($_SERVER['SERVER_NAME']))) return $item;
+        //if(!(isset($_SERVER['REQUEST_SCHEME']) && isset($_SERVER['SERVER_NAME']))) return $item;
         
         $assigned = $item->data['##ticket.assigntousers##'];
         $item->data['##ticket.assigntousers##'] = explode(',', $assigned)[0];
@@ -203,7 +203,7 @@ class Process extends \CommonDBTM
             ';*/
 
         $url = $CFG_GLPI['url_base'].'/plugins/etn/front/status.php?'.'users_id='.$requester['users_id'].'&tickets_id='.$tickets_id;
-        
+
         $ts = new \TicketSatisfaction();
         if($ticket = current($ts->find(['tickets_id' => $tickets_id], [], 1))) {
             $ts->getFromDB($ticket['id']);
