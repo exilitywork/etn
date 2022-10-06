@@ -159,8 +159,6 @@ class Process extends \CommonDBTM
             'events'    => 0,
             'lang'      => 1
         ];
-
-        //if(!(isset($_SERVER['REQUEST_SCHEME']) && isset($_SERVER['SERVER_NAME']))) return $item;
         
         $assigned = $item->data['##ticket.assigntousers##'];
         $item->data['##ticket.assigntousers##'] = explode(',', $assigned)[0];
@@ -185,23 +183,6 @@ class Process extends \CommonDBTM
             $item->data['##ticket.assigntousertitle##'] = $title['name'];
         }
 
-        // add to notification's template tags of solved ticket's ratings
-        /*$style = '
-                display:inline-block;
-                background:#3200F0;
-                color:#ffffff;
-                font-family:Stolzl, Arial, san-serif;
-                font-size:16px;
-                font-weight:600;
-                line-height:1.6;
-                margin:0;
-                text-decoration:none;
-                text-transform:none;
-                padding:10px 15px;
-                mso-padding-alt:0px;
-                border-radius:3px;
-            ';*/
-
         $url = $CFG_GLPI['url_base'].'/plugins/etn/front/status.php?'.'users_id='.$requester['users_id'].'&tickets_id='.$tickets_id;
 
         $ts = new \TicketSatisfaction();
@@ -210,11 +191,11 @@ class Process extends \CommonDBTM
             $ts->fields['id'] = $ticket['id'];
             $ts->fields['tickets_id'] = $tickets_id;
             $ts->fields['date_begin'] = date('Y-m-d H:i:s');
-            $ts->fields['satisfaction'] = isset($ts->fields['satisfaction']) ? $ts->fields['satisfaction'] : 5;
+            $ts->fields['date_answered'] = isset($ts->fields['satisfaction']) ? date('Y-m-d H:i:s') : null;
+            $ts->fields['satisfaction'] = isset($ts->fields['satisfaction']) ? $ts->fields['satisfaction'] : null;
             $ts->updateInDB(array_keys($ts->fields));
         } else {
             $input['date_begin'] = date('Y-m-d H:i:s');
-            $input['satisfaction'] = 5;
             $input['tickets_id'] = $tickets_id;
             $ts->add($input);
         }
@@ -229,12 +210,7 @@ class Process extends \CommonDBTM
             $input['date_create'] = date('Y-m-d H:i:s');
             $r->add($input);
         }
-        /*$item->data['##ticket.rating.0##'] = '<a href="'.$url.'&rating=0" style="'.$style.'">1</a>';
-        $item->data['##ticket.rating.1##'] = '<a href="'.$url.'&rating=1" style="'.$style.'">1</a>';
-        $item->data['##ticket.rating.2##'] = '<a href="'.$url.'&rating=2" style="'.$style.'">2</a>';
-        $item->data['##ticket.rating.3##'] = '<a href="'.$url.'&rating=3" style="'.$style.'">3</a>';
-        $item->data['##ticket.rating.4##'] = '<a href="'.$url.'&rating=4" style="'.$style.'">4</a>';
-        $item->data['##ticket.rating.5##'] = '<a href="'.$url.'&rating=5" style="'.$style.'">5</a>';*/
+
         $item->data['##ticket.rating.0##'] = $url.'&rating=0';
         $item->data['##ticket.rating.1##'] = $url.'&rating=1';
         $item->data['##ticket.rating.2##'] = $url.'&rating=2';
@@ -243,128 +219,12 @@ class Process extends \CommonDBTM
         $item->data['##ticket.rating.5##'] = $url.'&rating=5';
         
         // add to notification's template tag of ticket's priority up
-        //$item->data['##ticket.priorityup##'] = '<a href="'.$url.'&priority_up=4" style="'.$style.'">'.__('Повысить приоритет', 'etn').'</a>';
         $item->data['##ticket.priorityup##'] = $url.'&priority_up=4';
         
         
         return $item;
     }
 
-    /**
-     * Update user photo in documents when user's preferences are updated
-     *
-     * @param $item            class User
-     *
-     * @return bool
-    **/
-    static function updateUser($item) {
-        Config::switchConfig($item);
-        
-        $doc = new \Document();
-        // update photo with LDAP auth
-        if(!isset($item->input['picture']) && isset($item->input['authtype']) && $item->input['authtype'] == 3) {
-            $item->input['picture'] = $item->syncLdapPhoto();
-            print_r($file);
-            self::updatePhotoByFilename($item->input['picture'], $item->input['id']);
-            return;
-        }
-        // update photo with internal auth
-        if(isset($item->fields['picture']) && !isset($item->input['_picture'])) {
-            self::updatePhotoByFilename($item->fields['picture'], $item->fields['id']);
-            return;
-        }
-        //update photo with manual
-        if(isset($item->input['_picture']) && isset($item->input['_tag_picture']) && isset($item->input['_prefix_picture'])) {
-            $input['_filename'][0] = '_'.$item->input['_picture'][0];
-            $input['_tag_filename'] = $item->input['_tag_picture'];
-            $input['_prefix_filename'][0] = '_'.$item->input['_prefix_picture'][0];
-            copy(GLPI_TMP_DIR.'/'.$item->input['_picture'][0], GLPI_TMP_DIR.'/'.$input['_filename'][0]);
-            $doc = new \Document();
-            if($curDoc = current($doc->find(['filename' => mb_substr($item->input['_picture'][0], 23)], [], 1))) {
-                $docID = $curDoc['id'];
-            } else {
-                $docID = $doc->add($input);
-            }
-
-            // add or update users and docs relations
-            $proc = new Process();
-            $proc->fields['users_id'] = $item->input['id'];
-            $proc->fields['documents_id'] = $docID;
-            if($curProc = current($proc->find(['users_id' => $item->input['id']], [], 1))) {
-                $proc->fields['id'] = $curProc['id'];
-                $proc->updateInDB(array_keys($proc->fields));
-            } else {
-                $proc->addToDB();
-            }
-        }
-    }
-
-    /**
-     * update user photo in docs by filename
-     *
-     * @param $file             string      filename
-     * @param $id               integer     user's ID
-     *
-    **/
-    static function updatePhotoByFilename($file, $id) {
-        $tag = trim(\Document::getImageTag(\Rule::getUuid()), '#');
-        $filename = mb_substr($file, strpos($file, '_') + 1);
-        $prefix = mb_substr($file, strpos($file, '/') + 1, strpos($file, '_') - strpos($file, '/'));
-        copy(GLPI_PICTURE_DIR.'/'.$file, GLPI_TMP_DIR.'/'.$prefix.$filename);
-
-        // search and add user photo as document
-        $input['_filename']        = [$prefix.$filename];
-        $input['_tag_filename']    = [$tag];
-        $input['_prefix_filename'] = [$prefix];
-        $doc = new \Document();
-        if($curDoc = current($doc->find(['filename' => $filename], [], 1))) {
-            $docID = $curDoc['id'];
-        } else {
-            $docID = $doc->add($input);
-        }
-
-        // add or update users and docs relations
-        $proc = new Process();
-        $proc->fields['users_id'] = $id;
-        $proc->fields['documents_id'] = $docID;
-        if($curProc = current($proc->find(['users_id' => $id], [], 1))) {
-            $proc->fields['id'] = $curProc['id'];
-            $proc->updateInDB(array_keys($proc->fields));
-        } else {
-            $proc->addToDB();
-        }
-    }
-
-    static function roundImg($filename = '') {
-        
-        $image_s = imagecreatefromjpeg($filename);
-        $width = imagesx($image_s);
-        $height = imagesy($image_s);
-        
-        $newwidth = 1000;
-        $newheight = 1000;
-        
-        $image = imagecreatetruecolor($newwidth, $newheight);
-        imagealphablending($image, true);
-
-        imagecopyresampled($image, $image_s, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
-        //create masking
-        $mask = imagecreatetruecolor($newwidth, $newheight);
-        $transparent = imagecolorallocate($mask, 255, 0, 0);
-        imagecolortransparent($mask,$transparent);
-        imagefilledellipse($mask, $newwidth/2, $newheight/2, $newwidth-1, $newheight-1, $transparent);
-        
-        $red = imagecolorallocate($mask, 0, 0, 0);
-        imagecopymerge($image, $mask, 0, 0, 0, 0, $newwidth, $newheight, 100);
-        imagecolortransparent($image,$red);
-        imagefill($image, 0, 0, $red);
-
-        //output, save and free memory
-        header('Content-type: image/png');
-        imagepng($image,'/var/www/glpi/plugins/etn/output.png');
-        imagedestroy($image);
-        imagedestroy($mask);
-    }
 }
 
 ?>
