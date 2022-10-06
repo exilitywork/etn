@@ -28,43 +28,33 @@
  * -------------------------------------------------------------------------
  */
 
-namespace GlpiPlugin\Etn;
+use GlpiPlugin\Etn\Config;
 
-if (!defined('GLPI_ROOT')) {
-    die("Sorry. You can't access directly to this file");
+include ("../../../inc/includes.php");
+
+Session::checkLoginUser();
+
+if(!(isset($_POST['name']) && isset($_POST['token']))) die();
+
+$name = $_POST['name'];
+$token = $_POST['token'];
+
+try {
+    $bot = new \TelegramBot\Api\BotApi(Config::getOption('bot_token'));
+    $config = Config::getConfig();
+    $updates = $bot->getUpdates();
+    if(!is_array($updates)) $updates = array($updates);
+    krsort($updates);
+    foreach($updates as $update){
+        if($message = $update->getMessage()) {
+            if($name == $message->getChat()->getTitle()) {
+                print($message->getChat()->getId());
+                die();
+            }
+        }
+    }        
+} catch (Exception $e) {
+    $e->getMessage();
+    print_r($e->getMessage());
+    return false;
 }
-
-class Rating extends \CommonDBTM
-{
-
-    /**
-     * Get typename
-     *
-     * @param $nb            integer
-     *
-     * @return string
-    **/
-    static function getTypeName($nb = 0)
-    {
-        return __('Оценки', 'etn');
-    }
-
-    /**
-     *  @see CommonGLPI::getMenuContent()
-     *
-     *  @since version 0.5.6
-    **/
-    static function getMenuContent() {
-        global $CFG_GLPI;
-
-        $menu = array();
-
-        $menu['title']              = self::getMenuName();
-        $menu['icon']               = 'far fa-star';
-        $menu['page']               = '/plugins/etn/front/rating.php';
-        $menu['links']['config']    = '/plugins/etn/front/config.php';
-        return $menu;
-    }
-    
-}
-?>

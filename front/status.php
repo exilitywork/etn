@@ -29,7 +29,7 @@
  */
 use Glpi\Application\View\TemplateRenderer;
 use GlpiPlugin\Etn\Rating;
-use GlpiPlugin\Etn\Priority;
+use GlpiPlugin\Etn\Telegram;
 
 include("../../../inc/includes.php");
 $noLogin = true;
@@ -52,26 +52,36 @@ $isSolved           = false;
 
 if(isset($_REQUEST['tickets_id']) && isset($_REQUEST['users_id'])){
     if(isset($_REQUEST['rating'])){
+        $status = $_REQUEST['rating'];
         $r = new Rating();
         $ts = new \TicketSatisfaction();
         $ticket = current($ts->find(['tickets_id' => $_REQUEST['tickets_id']], [], 1));
-        if($rating = current($r->find(['tickets_id' => $_REQUEST['tickets_id'], 'status' => 1], [], 1))) {
+        $rating = current($r->find(['tickets_id' => $_REQUEST['tickets_id']], [], 1));
+        if(isset($rating['status']) && $rating['status']) {
             $multipleRate = true;
             $status = isset($ticket['satisfaction']) ? $ticket['satisfaction'] : -1;
         } else {
-            if(count($ticket)) {
-                $ts->fields['id'] = $ticket['id'];
-                $ts->fields['date_answered'] = date('Y-m-d H:i:s');
-                $ts->fields['satisfaction'] = $_REQUEST['rating'];
-                $ts->updateInDB(array_keys($ts->fields));
-            } else {
+            if(!$ticket) {
                 $_REQUEST['date_answered'] = date('Y-m-d H:i:s');
                 $ts->add($_REQUEST);
+                $ticket = current($ts->find(['tickets_id' => $_REQUEST['tickets_id']], [], 1));
+                $rating = current($r->find(['tickets_id' => $_REQUEST['tickets_id']], [], 1));
             }
-            $_REQUEST['status'] = 1;
-            $r->add($_REQUEST);
+            $ts->fields['date_answered'] = date('Y-m-d H:i:s');
+            $ts->fields['satisfaction'] = $_REQUEST['rating'];
+            $ts->fields['id'] = $ticket['id'];
+            $ts->updateInDB(array_keys($ts->fields));
+            if(!$rating) {
+                $r->add(['tickets_id' => $_REQUEST['tickets_id']]);
+                $rating = current($r->find(['tickets_id' => $_REQUEST['tickets_id']], [], 1));
+            }
+            $r->fields['status'] = 1;
+            $r->fields['id'] = $rating['id'];
+            $r->fields['tickets_id'] = $_REQUEST['tickets_id'];
+            $r->updateInDB(array_keys($r->fields));
             $successRate = true;
-            $status = $_REQUEST['rating'];
+
+            if($status < 5) Telegram::sendRatingMessage($_REQUEST['tickets_id'], $status);
         }
 
     }
@@ -91,6 +101,21 @@ if(isset($_REQUEST['tickets_id']) && isset($_REQUEST['users_id'])){
                 $t->fields['impact'] = $_REQUEST['priority_up'];
                 $t->updateInDB(array_keys($t->fields));
                 $successPriority = true;
+                Telegram::sendPriorityUpMessage($_REQUEST['tickets_id']);
+
+                $notification = new \Notification();
+                $n = current($notification->find(['itemtype' => 'Ticket', 'event' => 'update', 'is_active' => 0], [], 1));
+                if($n) {
+                    $notification->fields['id'] = $n['id'];
+                    $notification->fields['is_active'] = 1;
+                    $notification->updateInDB(array_keys($notification->fields));
+                }
+                $t->getFromDb($ticket['id']);
+                \NotificationEvent::raiseEvent("update", $t);
+                if($n) {
+                    $notification->fields['is_active'] = 0;
+                    $notification->updateInDB(array_keys($notification->fields));
+                }
             }
         } else {
             $error = true;

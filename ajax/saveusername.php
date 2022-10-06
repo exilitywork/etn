@@ -28,43 +28,33 @@
  * -------------------------------------------------------------------------
  */
 
-namespace GlpiPlugin\Etn;
+use GlpiPlugin\Etn\User;
 
-if (!defined('GLPI_ROOT')) {
-    die("Sorry. You can't access directly to this file");
-}
+include ("../../../inc/includes.php");
 
-class Rating extends \CommonDBTM
-{
+Session::checkLoginUser();
 
-    /**
-     * Get typename
-     *
-     * @param $nb            integer
-     *
-     * @return string
-    **/
-    static function getTypeName($nb = 0)
-    {
-        return __('Оценки', 'etn');
+if(!isset($_POST['username'])) die();
+
+$userID = Session::getLoginUserID();
+$username = $_POST['username'];
+
+try {
+    $user = new User();
+    $u = current($user->find(['users_id' => $userID], [], 1));
+    if($u) {
+        $user->fields['users_id'] = $userID;
+        $user->fields['username'] = $username;
+        if($u['username'] != $username) {
+            $user->fields['id'] = $u['id'];
+            $user->updateInDB(array_keys($user->fields));
+        }
+    } else {
+        $user->addToDB();
     }
-
-    /**
-     *  @see CommonGLPI::getMenuContent()
-     *
-     *  @since version 0.5.6
-    **/
-    static function getMenuContent() {
-        global $CFG_GLPI;
-
-        $menu = array();
-
-        $menu['title']              = self::getMenuName();
-        $menu['icon']               = 'far fa-star';
-        $menu['page']               = '/plugins/etn/front/rating.php';
-        $menu['links']['config']    = '/plugins/etn/front/config.php';
-        return $menu;
-    }
-    
+    print(true);
+} catch (Exception $e) {
+    $e->getMessage();
+    print_r($e->getMessage());
 }
-?>
+die();

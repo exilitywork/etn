@@ -45,55 +45,294 @@ class Config extends \CommonDBTM
      * @return string
     **/
     static function getTypeName($nb = 0) {
-        return __('Config', 'etn');
+        return __('ETN Config', 'etn');
+    }
+
+    /**
+     * Get headername
+     *
+     * @return string
+    **/
+    public function getHeaderName(): string {
+        return __('Настройки', 'etn');
+    }
+
+    static function getMenuContent() {
+
+        $menu          = [];
+        $menu['title'] = self::getMenuName();
+        $menu['icon']   = 'far fa-envelope';
+        $menu['page']   = '/plugins/etn/front/config.php';
+
+        return $menu;
+    }
+
+    /**
+    * Define tabs to display on form page
+    *
+    * @param array $options
+    * @return array containing the tabs name
+    */
+   function defineTabs($options = []) {
+
+    $ong        = [];
+    $this->addStandardTab("GlpiPlugin\Etn\Config", $ong, $options);
+    //$this->addStandardTab('Log', $ong, $options);
+
+    return $ong;
+ }
+
+    /**
+     * Get the tab name used for item
+     *
+     * @param object $item the item object
+     * @param integer $withtemplate 1 if is a template form
+     * @return string|array name of the tab
+     */
+    function getTabNameForItem(\CommonGLPI $item, $withtemplate = 0) {
+        if ($item->getType()==__CLASS__) {
+            return [
+                __('Config')
+            ];
+        }
+        return '';
+    }
+
+    /**
+    * Display the content of the tab
+    *
+    * @param object $item
+    * @param integer $tabnum number of the tab to display
+    * @param integer $withtemplate 1 if is a template form
+    * @return boolean
+    */
+   static function displayTabContentForItem($item, $tabnum = 0, $withtemplate = 0) {
+
+    $opt = current($item->find([], [], 1));
+    $item->getFromDB($opt['id']);
+    switch ($tabnum) {
+       case 0:
+          $item->showForm();
+          return true;
+    }
+    return false;
+ }
+    /**
+     * Display form
+     *
+     * @param integer   $ID
+     * @param array     $options
+     * 
+     * @return true
+     */
+    function showForm($ID = 1, $options = []) {
+        global $CFG_GLPI;
+
+        $config = self::getConfig();
+
+        $options['formtitle']       = __('Extended Ticket\'s Notification', 'etn');
+        $options['colspan']         = 4;
+        $options['withtemplate']    = 0;
+        $options['target']          = $CFG_GLPI["root_doc"].'/plugins/etn/front/config.php';
+        $this->showFormHeader($options);
+
+        echo '<tr class="tab_bg_1">';
+        echo '<td>';
+        echo __('Профиль, для которого отключено обновление фото из LDAP', 'etn');
+        echo '</td>';
+        echo '<td class="center">';
+        \Profile::dropdownUnder([
+            'name'  => 'ldap_profile',
+            'value' => isset($config['ldap_profile']) ? $config['ldap_profile'] : \Profile::getDefault()
+        ]);
+        echo '</td>';
+        echo '</tr>';
+        echo '<tr class="tab_bg_1">';
+        echo '<td>';
+        echo __('Telegram Bot Token');
+        echo '</td>';
+        echo '<td class="center">';
+        echo \Html::input(
+            'bot_token',
+            [
+                'value' => isset($config['bot_token']) ? $config['bot_token'] : '',
+                'id'    => 'bot_token'
+            ]
+        );
+        echo '</td>';
+        echo '</tr>';
+        /*echo '<tr class="tab_bg_1">';
+        echo '<td>';
+        echo __('Профиль для Telegram уведомлений', 'etn');
+        echo '</td>';
+        echo '<td class="center">';
+        \Profile::dropdownUnder([
+            'name'  => 'notification_profile',
+            'value' => isset($config['notification_profile']) ? $config['notification_profile'] : \Profile::getDefault()
+        ]);
+        echo '</td>';
+        echo '</tr>';*/
+        echo '<tr class="tab_bg_1">';
+        echo '<td>';
+        echo __('Профиль для доступа к статистике по оценкам', 'etn');
+        echo '</td>';
+        echo '<td class="center">';
+        \Profile::dropdownUnder([
+            'name'  => 'rating_profile',
+            'value' => isset($config['rating_profile']) ? $config['rating_profile'] : \Profile::getDefault()
+        ]);
+        echo '</td>';
+        echo '</tr>';
+        echo '<tr class="tab_bg_1"><th colspan="4">'.__('Группа Telegram для уведомлений', 'etn') . '</th></tr>';
+        echo '<tr class="tab_bg_1">';
+        echo '<td>';
+        echo __('Название группы', 'etn');
+        echo '</td>';
+        echo '<td class="center">';
+        echo \Html::input(
+            'group_name',
+            [
+                'value' => isset($config['group_name']) ? $config['group_name'] : '',
+                'id'    => 'group_name'
+            ]
+        );
+        echo '</td>';
+        echo '<td>';
+        echo __('ID группы', 'etn');
+        echo '</td>';
+        echo '<td class="center">';
+        echo \Html::input(
+            'group_chat_id',
+            [
+                'value' => isset($config['group_chat_id']) ? $config['group_chat_id'] : '',
+                'id'    => 'group_chat_id'
+            ]
+        );
+        echo '</td>';
+        echo '<td>';
+        echo '
+            <a id="get-id" class="btn btn-primary me-2" name="get-id" value="1" onclick="getId()">
+                <span>Определить ID</span>
+            </a>
+            <script>
+                function getId() {
+                    let name = $("#group_name").val();
+                    let token = $("#bot_token").val();
+                    if(!name) {
+                        $("#group_name").css("border-width", "4px").css("border-color", "red");
+                    }
+                    if(!token) {
+                        $("#bot_token").css("border-width", "4px").css("border-color", "red");
+                    }
+                    if(!name || !token) {
+                        alert("'.__('Заполните поля, выделенные красным!', 'etn').'");
+                        return;
+                    }
+                    $.ajax({
+                        type: "POST",
+                        url: "../../../plugins/etn/ajax/getid.php",
+                        data: {
+                            name: name, 
+                            token: token
+                        },
+                        datatype: "json"
+                    }).done(function(response) {
+                        if(response) {
+                            $("#group_chat_id").val(response);
+                        } else {
+                            alert("'.__('Некорректный токен или название группы!', 'etn').'");
+                        }
+                    });
+                }
+            </script>';
+        echo '</td>';
+        echo '</tr>';
+        echo '</table>';
+
+        $options['candel'] = false;
+        $this->showFormButtons($options);
+
+        return true;
     }
 
     /**
      * Update config of plugin
      *
+     * @param array     $options
+     * 
+     * @return bool
     **/
-    static function updateConfig() {
-        $configLDAP = new \AuthLDAP();
-        $ldaps = $configLDAP->find();
-        foreach($ldaps as $ldap) {
-            $cfg = new Config();
-            $config = current($cfg->find(['ldap_id' => $ldap['id']], [], 1));
-            if(empty($ldap['picture_field']) && $config) {
-                $cfg->getFromDB($config['id']);
-                $cfg->delete($cfg->fields, 1);
-                continue;
+    static function updateConfig($options = []) {
+        try {
+            foreach($options as $option => $value) {
+                $cfg = new self;
+                $cfg->fields['option'] = $option;
+                $cfg->fields['value'] = $value;
+                if($config = current($cfg->find(['option' => $option], [], 1))) {
+                    $cfg->fields['id'] = $config['id'];
+                    $cfg->updateInDB(array_keys($cfg->fields));
+                } else {
+                    $cfg->addToDB();
+                }
             }
-            $cfg->fields['ldap_id'] = $ldap['id'];
-            $cfg->fields['ldap_photo_field'] = $ldap['picture_field'];
-            if($config) {
-                if(isset($config['ldap_photo_field']) && $config['ldap_photo_field'] == $ldap['picture_field']) continue;
-                $cfg->fields['id'] = $config['id'];
-                $cfg->updateInDB(array_keys($cfg->fields));
-            } else {
-                $cfg->addToDB();
-            }
+        } catch (Exception $e) {
+            $e->getMessage();
+            return false;
         }
+        return true;
     }
 
     /**
-     * Switch config of plugin
+     * Get config of plugin
      *
+     * @param array     $options
+     * 
+     * @return array|false
     **/
-    static function switchConfig($item) {
-        $configLDAP = new \AuthLDAP();
-        $configLDAP->getFromDB($item->fields['auths_id']);       
-        $configLDAP->fields['id'] = $item->fields['auths_id']; 
-        if(in_array(6, \Profile_User::getUserProfiles($item->fields['id']))) {
-            $configLDAP->fields['picture_field'] = '';
-            $configLDAP->updateInDB(array_keys($configLDAP->fields));
-        } else {
-            $cfg = new Config();
-            $config = current($cfg->find(['ldap_id' => $configLDAP->fields['id']], [], 1));
-            if($config && $configLDAP->fields['picture_field'] != $config['ldap_photo_field']) {
-                $configLDAP->fields['picture_field'] = $config['ldap_photo_field'];
-                $configLDAP->updateInDB(array_keys($configLDAP->fields));
+    static function getConfig($options = []) {
+        $out = [];
+        $cfg = new self;
+        try {
+            if($options){
+                foreach($options as $option) {
+                    $config = current($cfg->find(['option' => $option], [], 1));
+                    $out[$option] = $config['value'];
+                }
+            } else {
+                foreach($cfg->find() as $config) {
+                    $out[$config['option']] = $config['value'];
+                }
             }
+        } catch (Exception $e) {
+            $e->getMessage();
+            return false;
         }
+        return $out;
+    }
+
+    /**
+     * Get option value
+     *
+     * @param string     $options
+     * 
+     * @return string|false
+    **/
+    static function getOption($option) {
+        $cfg = new self;
+        try {
+            if($config = current($cfg->find(['option' => $option], [], 1))){
+                return $config['value'];
+            }
+        } catch (Exception $e) {
+            $e->getMessage();
+            return false;
+        }
+        return false;
+    }
+
+    function can($ID, $right, ?array &$input = NULL) {
+        if(\Session::haveRight('config', READ)) return true; 
+        return false;
     }
 }
 ?>

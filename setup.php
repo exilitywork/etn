@@ -28,7 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
-define('PLUGIN_ETN_VERSION', '0.4.0');
+define('PLUGIN_ETN_VERSION', '0.5.9');
 
 // Minimal GLPI version, inclusive
 define("PLUGIN_ETN_MIN_GLPI_VERSION", "10.0.1");
@@ -36,9 +36,9 @@ define("PLUGIN_ETN_MIN_GLPI_VERSION", "10.0.1");
 define("PLUGIN_ETN_MAX_GLPI_VERSION", "10.0.99");
 
 use Glpi\Plugin\Hooks;
-use GlpiPlugin\Etn\Process;
+use GlpiPlugin\Etn\Config;
 
-require_once "vendor/autoload.php";
+require_once 'vendor/autoload.php';
 
 /**
  * Init hooks of the plugin.
@@ -50,35 +50,29 @@ function plugin_init_etn()
 {
     global $PLUGIN_HOOKS, $CFG_GLPI;
     
-    $PLUGIN_HOOKS['csrf_compliant']['etn'] = true;
+    $PLUGIN_HOOKS[Hooks::CSRF_COMPLIANT]['etn'] = true;
 
-    // bot begin ------------
-    /*$token = '857161802:AAHT5Pb60LwtqNiR7faOKS_kY_vBmoTxY2I';
-        $bot = new \TelegramBot\Api\BotApi('857161802:AAHT5Pb60LwtqNiR7faOKS_kY_vBmoTxY2I');
-    $chatId = '383009633';
-    $messageText = 'TEST';
-        //$bot->sendMessage($chatId, $messageText);
-        try {
-            //print_r($bot->getUpdates());
-            //die();
-
-        
-        } catch (\TelegramBot\Api\Exception $e) {
-            $e->getMessage();
-        }*/
-
-    // bot end ---------------
-    $PLUGIN_HOOKS['add_css']['etn'][]="vendor/DataTables/datatables.min.css";
-    $PLUGIN_HOOKS['add_javascript']['etn'] = "vendor/DataTables/datatables.min.js";
-    $PLUGIN_HOOKS["menu_toadd"]['etn'] = array('helpdesk'  => 'GlpiPlugin\Etn\Rating');
-    //$PLUGIN_HOOKS['config_page']['etn'] = 'front/index.php';
-    //print_r($CFG_GLPI);
+    $PLUGIN_HOOKS[Hooks::ADD_CSS]['etn'][] = 'vendor/DataTables/datatables.min.css';
+    $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['etn'] = 'vendor/DataTables/datatables.min.js';
+    //$PLUGIN_HOOKS["menu_toadd"]['etn'] = ['helpdesk'  => 'GlpiPlugin\Etn\Rating'];
+    
     //die();
+    
+    $menu = [];
+    if(Config::getOption('rating_profile') == $_SESSION['glpiactiveprofile']['id']) $menu['helpdesk']  = 'GlpiPlugin\Etn\Rating';
+    if(\Session::haveRight('config', READ)) $menu['config']  = 'GlpiPlugin\Etn\Config';
+    $PLUGIN_HOOKS['menu_toadd']['etn'] = $menu;
 
     //$PLUGIN_HOOKS['post_show_item']['etn'] = ['GlpiPlugin\Etn\Process', 'postShowItem'];
-    $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['etn'] = ['User' => ['GlpiPlugin\Etn\Process', 'updateUser']];
-    $PLUGIN_HOOKS['item_get_datas']['etn'] = ['NotificationTargetTicket' => ['GlpiPlugin\Etn\Process', 'modifyNotification']];
+    $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['etn'] = ['User' => ['GlpiPlugin\Etn\User', 'updateUser']];
+    $PLUGIN_HOOKS[Hooks::ITEM_GET_DATA]['etn'] = ['NotificationTargetTicket' => ['GlpiPlugin\Etn\Process', 'modifyNotification']];
+    //$PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['etn'] = ['User' => ['GlpiPlugin\Etn\Telegram', 'showUsernameField']];
+    $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['etn'] = ['GlpiPlugin\Etn\User', 'showUsernameField'];
+    $PLUGIN_HOOKS[Hooks::POST_SHOW_TAB]['etn'] = ['GlpiPlugin\Etn\User', 'showUsernameField'];
+    //$PLUGIN_HOOKS[Hooks::PRE_SHOW_TAB]['etn'] = ['GlpiPlugin\Etn\User', 'showUsernameField'];
     //$PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['etn'] = ['GlpiPlugin\Etn\Process', 'postShowItem'];
+    //$PLUGIN_HOOKS['item_add']['etn'] = array('User' => array('GlpiPlugin\Etn\User', 'item_add_user'));
+    //$PLUGIN_HOOKS['pre_item_update']['etn'] = array('User' => array('PluginTelegrambotUser', 'item_update_user'));
 }
 
 /**

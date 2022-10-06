@@ -34,7 +34,7 @@ if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access directly to this file");
 }
 
-class Rating extends \CommonDBTM
+class Chat extends \CommonDBTM
 {
 
     /**
@@ -44,27 +44,58 @@ class Rating extends \CommonDBTM
      *
      * @return string
     **/
-    static function getTypeName($nb = 0)
-    {
-        return __('Оценки', 'etn');
+    static function getTypeName($nb = 0) {
+        return __('Chat', 'etn');
     }
 
     /**
-     *  @see CommonGLPI::getMenuContent()
+     * Add or update telegram user's chat ID
      *
-     *  @since version 0.5.6
+     * @param $username     string
+     * @param $id           integer
+     *
+     * @return integer
     **/
-    static function getMenuContent() {
-        global $CFG_GLPI;
-
-        $menu = array();
-
-        $menu['title']              = self::getMenuName();
-        $menu['icon']               = 'far fa-star';
-        $menu['page']               = '/plugins/etn/front/rating.php';
-        $menu['links']['config']    = '/plugins/etn/front/config.php';
-        return $menu;
+    static function updateChat(string $username, int $id) {
+        try {
+            $chat = new self;
+            $chat->fields['chat_id'] = $id;
+            $chat->fields['username'] = $username;
+            if($chatCur = current($chat->find(['username' => $username, 'chat_id' => $id], [], 1))) {
+                return 3;
+            }
+            if($chatCur = current($chat->find(['username' => $username], [], 1))) {
+                $chat->fields['id'] = $chatCur['id'];
+                $chat->updateInDB(array_keys($chat->fields));
+                return 2;
+            } else {
+                $chat->addToDB();
+            }
+        } catch (Exception $e) {
+            $e->getMessage();
+            return false;
+        }
+        return 1;
     }
-    
+
+    /**
+     * Get telegram user's chat ID
+     *
+     * @param $username     string
+     *
+     * @return string
+    **/
+    static function getChat(string $username) {
+        $id = false;
+        $chat = new self;
+        try {
+            $config = current($cfg->find(['username' => $username], [], 1));
+            $id = $config['chat_id'];
+        } catch (Exception $e) {
+            $e->getMessage();
+            return false;
+        }
+        return $id;
+    }
 }
 ?>

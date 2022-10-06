@@ -27,44 +27,38 @@
  * @link      https://github.com/exilitywork/etn
  * -------------------------------------------------------------------------
  */
+use Glpi\Application\View\TemplateRenderer;
+use GlpiPlugin\Etn\Config;
 
-namespace GlpiPlugin\Etn;
+global $CFG_GLPI, $DB;
 
-if (!defined('GLPI_ROOT')) {
-    die("Sorry. You can't access directly to this file");
+include("../../../inc/includes.php");
+
+Session::checkRight('config', READ);
+
+if(Session::getLoginUserID()) {
+    if (Session::getCurrentInterface() == "helpdesk") {
+        Html::displayRightError();
+    } else {
+        Html::header(Config::getTypeName(1), $_SERVER['PHP_SELF'], 'config', 'GlpiPlugin\Etn\Config');
+    }
+}
+if(!empty($_POST)) {
+    if(isset($_POST['entities_id'])) unset($_POST['entities_id']);
+    if(isset($_POST['update'])) unset($_POST['update']);
+    if(isset($_POST['id'])) unset($_POST['id']);
+    if(isset($_POST['_glpi_csrf_token'])) unset($_POST['_glpi_csrf_token']);
+    Config::updateConfig($_POST);
 }
 
-class Rating extends \CommonDBTM
-{
+$config = new Config();
+$config->getFromDB(1);
+$config->display(['withtemplate' => 1]);
 
-    /**
-     * Get typename
-     *
-     * @param $nb            integer
-     *
-     * @return string
-    **/
-    static function getTypeName($nb = 0)
-    {
-        return __('Оценки', 'etn');
+if(Session::getLoginUserID()) {
+    if (Session::getCurrentInterface() == "helpdesk") {
+        Html::helpFooter();
+    } else {
+        Html::footer();
     }
-
-    /**
-     *  @see CommonGLPI::getMenuContent()
-     *
-     *  @since version 0.5.6
-    **/
-    static function getMenuContent() {
-        global $CFG_GLPI;
-
-        $menu = array();
-
-        $menu['title']              = self::getMenuName();
-        $menu['icon']               = 'far fa-star';
-        $menu['page']               = '/plugins/etn/front/rating.php';
-        $menu['links']['config']    = '/plugins/etn/front/config.php';
-        return $menu;
-    }
-    
 }
-?>

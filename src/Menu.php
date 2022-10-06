@@ -34,7 +34,7 @@ if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access directly to this file");
 }
 
-class Rating extends \CommonDBTM
+class Menu extends \CommonGLPI
 {
 
     /**
@@ -44,27 +44,39 @@ class Rating extends \CommonDBTM
      *
      * @return string
     **/
-    static function getTypeName($nb = 0)
-    {
-        return __('Оценки', 'etn');
+    static function getMenuName($nb = 0) {
+        return __('Menu', 'etn');
     }
 
     /**
-     *  @see CommonGLPI::getMenuContent()
-     *
-     *  @since version 0.5.6
+     * @return array
     **/
     static function getMenuContent() {
-        global $CFG_GLPI;
+        //print_r('TEST');
+        //$url             = "";
+        //$default_context = 0;
+        /*if (class_exists("PluginTasklistsPreference")) {
+        $default_context = PluginTasklistsPreference::checkDefaultType(Session::getLoginUserID());
+        }
+        if ($default_context > 0) {
+        $url = "?itemtype=PluginTasklistsKanban&glpi_tab=PluginTasklistsKanban$" . $default_context;
+        }*/
 
-        $menu = array();
+        $menu          = [];
+        $menu['title'] = self::getMenuName(2);
 
-        $menu['title']              = self::getMenuName();
-        $menu['icon']               = 'far fa-star';
-        $menu['page']               = '/plugins/etn/front/rating.php';
-        $menu['links']['config']    = '/plugins/etn/front/config.php';
+        //$menu['title']  = __('Оценки', 'etn');
+        $menu['icon']   = '';
+        $menu['page']   = '/plugins/etn/front/config.php';
+        //$menu['page']  = '/plugins/hardwareaudit/front/change.php';
+        //$menu['links']['search'] = '/plugins/hardwareaudit/front/change.php';
+        //if (PluginTasklistsTask::canCreate()) {
+        //$menu['links']['add']      = '/plugins/hardwareaudit/front/change.php';
+        //$menu['links']['template'] = '/plugins/hardwareaudit/front/change.php';
+        //}
+        //$menu['links']['config'] = '/plugins/hardwareaudit/front/config.php';
+
         return $menu;
     }
-    
 }
 ?>

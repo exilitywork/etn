@@ -29,57 +29,29 @@
  */
 
 use GlpiPlugin\Etn\Process;
-use GlpiPlugin\Etn\Config;
+use GlpiPlugin\Etn\Ldap;
 
 /**
- * Plugin uninstall process
+ * Plugin install process
  *
  * @return boolean
  */
 function plugin_etn_install() {
    global $DB;
 
-   $create_table_query = "
-      CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_processes`
-      (
-         `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-         `users_id` INT UNSIGNED NOT NULL,
-         `documents_id` INT UNSIGNED NOT NULL,
-         PRIMARY KEY (`id`),
-         KEY (`users_id`),
-         KEY (`documents_id`)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-   ";
-   $DB->query($create_table_query) or die($DB->error());
+   if(!$DB->runFile(GLPI_ROOT . "/plugins/etn/sql/install.sql")) die("SQL error");
 
-   $create_table_query = "
-      CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_ratings`
-      (
-         `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-         `tickets_id` INT UNSIGNED NOT NULL,
-         `status` BOOL DEFAULT 0,
-         `date_create` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-         `date_mod` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-         PRIMARY KEY (`id`),
-         KEY (`tickets_id`)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-   ";
-   $DB->query($create_table_query) or die($DB->error());
+   /*$cron = new \CronTask();
+   if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'SendMessageTelegeramETN')) {
+      \CronTask::Register('GlpiPlugin\Etn\Cron', 'SendMessageTelegeramETN', 300,
+                           ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
+   }
+   if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'ListenMessageTelegramETN')) {
+      \CronTask::Register('GlpiPlugin\Etn\Cron', 'ListenMessageTelegramETN', 300,
+                           ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
+   }*/
 
-   $create_table_query = "
-      CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_configs`
-      (
-         `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-         `ldap_id` INT UNSIGNED NOT NULL,
-         `ldap_photo_field` VARCHAR(255),
-         PRIMARY KEY (`id`),
-         KEY (`ldap_id`)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-   ";
-   $DB->query($create_table_query) or die($DB->error());
-
-   $user = new \User();
-   Config::updateConfig();
+   Ldap::updateConfig();
 
    $user = new \User();
    $users = $user->find();
@@ -129,17 +101,7 @@ function plugin_etn_install() {
 function plugin_etn_uninstall() {
    global $DB;
 
-   if ($DB->tableExists('glpi_plugin_etn_processes')) {
-      //$DB->query('DROP TABLE `glpi_plugin_etn_processes`');
-   }
-
-   if ($DB->tableExists('glpi_plugin_etn_ratings')) {
-      //$DB->query('DROP TABLE `glpi_plugin_etn_ratings`');
-   }
-
-   if ($DB->tableExists('glpi_plugin_etn_configs')) {
-      //$DB->query('DROP TABLE `glpi_plugin_etn_configs`');
-   }
+   //if(!$DB->runFile(GLPI_ROOT . "/plugins/etn/sql/uninstall.sql")) die("SQL error");
 
    return true;
 }
