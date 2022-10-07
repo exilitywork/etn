@@ -147,20 +147,6 @@ class Config extends \CommonDBTM
         ]);
         echo '</td>';
         echo '</tr>';
-        echo '<tr class="tab_bg_1">';
-        echo '<td>';
-        echo __('Telegram Bot Token');
-        echo '</td>';
-        echo '<td class="center">';
-        echo \Html::input(
-            'bot_token',
-            [
-                'value' => isset($config['bot_token']) ? $config['bot_token'] : '',
-                'id'    => 'bot_token'
-            ]
-        );
-        echo '</td>';
-        echo '</tr>';
         /*echo '<tr class="tab_bg_1">';
         echo '<td>';
         echo __('Профиль для Telegram уведомлений', 'etn');
@@ -183,7 +169,32 @@ class Config extends \CommonDBTM
         ]);
         echo '</td>';
         echo '</tr>';
-        echo '<tr class="tab_bg_1"><th colspan="4">'.__('Группа Telegram для уведомлений', 'etn') . '</th></tr>';
+        echo '<tr class="tab_bg_1">';
+        echo '<td>';
+        echo __('Минимальная положительная оценка', 'etn');
+        echo '</td>';
+        echo '<td class="center">';
+        \Dropdown::showNumber('min_rating', [
+            'value' => isset($config['min_rating']) ? $config['min_rating'] : 4,
+            'max'   => 5
+        ]);
+        echo '</td>';
+        echo '</tr>';
+        echo '<tr class="tab_bg_1"><th colspan="4">'.__('Настройки Telegram для уведомлений', 'etn') . '</th></tr>';
+        echo '<tr class="tab_bg_1">';
+        echo '<td>';
+        echo __('Telegram Bot Token');
+        echo '</td>';
+        echo '<td class="center">';
+        echo \Html::input(
+            'bot_token',
+            [
+                'value' => isset($config['bot_token']) ? $config['bot_token'] : '',
+                'id'    => 'bot_token'
+            ]
+        );
+        echo '</td>';
+        echo '</tr>';
         echo '<tr class="tab_bg_1">';
         echo '<td>';
         echo __('Название группы', 'etn');

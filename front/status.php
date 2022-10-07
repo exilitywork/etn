@@ -30,6 +30,7 @@
 use Glpi\Application\View\TemplateRenderer;
 use GlpiPlugin\Etn\Rating;
 use GlpiPlugin\Etn\Telegram;
+use GlpiPlugin\Etn\Config;
 
 include("../../../inc/includes.php");
 $noLogin = true;
@@ -81,7 +82,8 @@ if(isset($_REQUEST['tickets_id']) && isset($_REQUEST['users_id'])){
             $r->updateInDB(array_keys($r->fields));
             $successRate = true;
 
-            if($status < 5) Telegram::sendRatingMessage($_REQUEST['tickets_id'], $status);
+            $minRating = Config::getOption('min_rating');
+            if($status < ($minRating ? $minRating : 4)) Telegram::sendRatingMessage($_REQUEST['tickets_id'], $status);
         }
 
     }

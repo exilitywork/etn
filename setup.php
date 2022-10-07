@@ -54,13 +54,10 @@ function plugin_init_etn()
 
     $PLUGIN_HOOKS[Hooks::ADD_CSS]['etn'][] = 'vendor/DataTables/datatables.min.css';
     $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['etn'] = 'vendor/DataTables/datatables.min.js';
-    //$PLUGIN_HOOKS["menu_toadd"]['etn'] = ['helpdesk'  => 'GlpiPlugin\Etn\Rating'];
-    
-    //die();
-    
+
     $menu = [];
-    if(Config::getOption('rating_profile') == $_SESSION['glpiactiveprofile']['id']) $menu['helpdesk']  = 'GlpiPlugin\Etn\Rating';
-    if(\Session::haveRight('config', READ)) $menu['config']  = 'GlpiPlugin\Etn\Config';
+    if(isset($_SESSION['glpiactiveprofile']) && Config::getOption('rating_profile') == $_SESSION['glpiactiveprofile']['id']) $menu['helpdesk']  = 'GlpiPlugin\Etn\Rating';
+    if(\Session::haveRight('config', READ)) $menu['config'] = 'GlpiPlugin\Etn\Config';
     $PLUGIN_HOOKS['menu_toadd']['etn'] = $menu;
 
     //$PLUGIN_HOOKS['post_show_item']['etn'] = ['GlpiPlugin\Etn\Process', 'postShowItem'];
