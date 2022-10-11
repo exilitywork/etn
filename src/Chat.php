@@ -89,8 +89,7 @@ class Chat extends \CommonDBTM
         $id = false;
         $chat = new self;
         try {
-            $config = current($cfg->find(['username' => $username], [], 1));
-            $id = $config['chat_id'];
+            if($c = current($chat->find(['username' => $username], [], 1))) $id = $c['chat_id'];
         } catch (Exception $e) {
             $e->getMessage();
             return false;

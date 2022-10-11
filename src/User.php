@@ -54,6 +54,7 @@ class User extends \CommonDBTM
         $username = null;
         $id = null;
         $isPref = false;
+        $botName = Telegram::getBotName();
         if ($item->getType() == 'Preference' && $options['itemtype'] == 'User') {
             $id = \Session::getLoginUserID();
             $isPref = true;
@@ -67,8 +68,8 @@ class User extends \CommonDBTM
 
             $out = '<table class="tab_cadre_fixe" style="width: auto;">';
             $out .= '<tr class="tab_bg_1" style="border: 2px rgb(135, 170, 138) solid; border-radius: 4px; display: block;">';
-            $out .= "<td> " . __('Telegram username') . "</td>";
-            $out .= "<td><input id='username' type='text' name='username' value='$username'></td>";
+            $out .= '<td>'.__('Telegram username').'</td>';
+            $out .= '<td><input id="username" type="text" name="username" value="'.$username.'"></td>';
             if($isPref) $out .= '<td><a id="save-username" class="btn btn-primary me-2" name="ave-username" value="1" onclick="saveUsername()">Сохранить</a></td>
                 <script>
                     function saveUsername() {
@@ -96,6 +97,11 @@ class User extends \CommonDBTM
                                     .css("background-color", "rgb(226, 242, 227)")
                                     .css("color", "rgb(21, 82, 16)")
                                     .css("border-color", "rgba(98, 105, 118, 0.24)");
+                                if(response > 0) $("#reg-status").html("Зарегистрирован<br>в Telegram-боте").css("color", "rgb(21, 82, 16)");
+                                if(response < 0) 
+                                    $("#reg-status")
+                                        .html("Для завершения регистрации отправьте любое <br> сообщение Telegram-боту <a href=\"https://t.me/'.$botName.'\">'.$botName.'</a>")
+                                        .css("color", "rgb(214, 57, 57)");
                             } else {
                                 $("#save-username").html("Ошибка!")
                                     .css("background-color", "rgba(214, 57, 57, 0.05)")
@@ -104,8 +110,14 @@ class User extends \CommonDBTM
                         });
                     }
                 </script>';
-            $out .= "</tr>";
-            $out .= "</table>";
+            if(Chat::getChat($username)) {
+                $out .= '<td id="reg-status" style="color: rgb(21, 82, 16)">Зарегистрирован<br>в Telegram-боте</td>';
+            } else {
+                $out .= '<td id="reg-status" style="color: rgb(214, 57, 57)">Для завершения регистрации отправьте любое <br> сообщение Telegram-боту 
+                            <a href="https://t.me/'.$botName.'">'.$botName.'</a></td>';
+            }
+            $out .= '</tr>';
+            $out .= '</table>';
 
             echo $out;
         }
@@ -264,6 +276,21 @@ class User extends \CommonDBTM
                 }
             }
         }
+    }
+
+    /**
+     * Get username from DB
+     *
+     * @param $id            integer
+     *
+     * @return string|bool
+    **/
+    static function getUsername($id) {
+        $user = new self();
+        if($u = current($user->find(['users_id' => $id], [], 1))) {
+            return $u['username'];
+        }
+        return false;
     }
 }
 ?>

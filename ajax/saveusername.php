@@ -29,6 +29,7 @@
  */
 
 use GlpiPlugin\Etn\User;
+use GlpiPlugin\Etn\Chat;
 
 include ("../../../inc/includes.php");
 
@@ -52,7 +53,11 @@ try {
     } else {
         $user->addToDB();
     }
-    print(true);
+    if(Chat::getChat($username)) {
+        print(1);
+    } else {
+        print(-1);
+    }
 } catch (Exception $e) {
     $e->getMessage();
     print_r($e->getMessage());

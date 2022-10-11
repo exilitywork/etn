@@ -194,6 +194,14 @@ class Config extends \CommonDBTM
             ]
         );
         echo '</td>';
+        if($config['bot_token'] && $botName = Telegram::getBotName()) {
+            echo '<td>';
+            echo __('Telegram Bot URL');
+            echo '</td>';
+            echo '<td>';
+            echo '<a href="https://t.me/'.$botName.'" style="font-weight: bold">'.$botName.'</a>';
+            echo '</td>';
+        }
         echo '</tr>';
         echo '<tr class="tab_bg_1">';
         echo '<td>';

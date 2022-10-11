@@ -112,11 +112,36 @@ class Telegram extends \CommonDBTM
             $message = "Повышен приоритет заявки ".$ticketURL;
             $bot = new \TelegramBot\Api\BotApi(Config::getOption('bot_token'));
             $bot->sendMessage(Config::getOption('group_chat_id'), $message);
+            
+            $class = new $ticket->userlinkclass();
+            $ticketsUser = $class->getActors($ticketID);
+            $specs = $ticketsUser[\CommonITILActor::ASSIGN];
+            $u = new \User();
+            foreach($specs as $assign) {
+                $chatID = Chat::getChat(User::getUsername($assign['users_id']));
+                $bot->sendMessage($chatID, $message);
+            }
         } catch (Exception $e) {
             $e->getMessage();
             return false;
         }
         return true;
+    }
+
+    /**
+     * Get bot name
+     *
+     *
+     * @return string
+    **/
+    static function getBotName() {
+        try {
+            $bot = new \TelegramBot\Api\BotApi(Config::getOption('bot_token'));
+            return $bot->getMe()->getUsername();
+        } catch (Exception $e) {
+            $e->getMessage();
+            return false;
+        }
     }
 
 }

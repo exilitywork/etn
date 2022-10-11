@@ -34,45 +34,45 @@ use GlpiPlugin\Etn\Config;
 
 global $CFG_GLPI, $DB;
 
-include("../../../inc/includes.php");
+include('../../../inc/includes.php');
 
 Session::checkLoginUser();
 
 if(Config::getOption('rating_profile') != $_SESSION['glpiactiveprofile']['id']) Html::displayRightError();
 
 if(Session::getLoginUserID()) {
-    if (Session::getCurrentInterface() == "helpdesk") {
+    if (Session::getCurrentInterface() == 'helpdesk') {
         Html::displayRightError();
     } else {
         Html::header(Rating::getTypeName(1), $_SERVER['PHP_SELF'], 'helpdesk', 'GlpiPlugin\Etn\Rating');
     }
 }
 
-if (empty($_GET["date1"]) && empty($_GET["date2"])) {
+if (empty($_GET['date1']) && empty($_GET['date2'])) {
     $datetime = new DateTime();
     $datetime->modify('-30 day');
-    $_GET["date1"] = $datetime->format('Y-m-d');
-    $_GET["date2"] = date("Y-m-d");
+    $_GET['date1'] = $datetime->format('Y-m-d');
+    $_GET['date2'] = date('Y-m-d');
 }
 
-echo "<div class='center'><form method='get' name='form' action='".$CFG_GLPI['url_base']."/plugins/etn/front/rating.php'>";
-echo "<table class='tab_cadre_fixe' style='width: auto'>";
+echo '<div class="center"><form method="get" name="form" action="'.$CFG_GLPI['url_base'].'/plugins/etn/front/rating.php">';
+echo '<table class="tab_cadre_fixe" style="width: auto">';
 echo '<tr><th colspan="3" class="center">'.__('Статистика по оценкам решенных заявок', 'etn').'</th></tr>';
-echo "<tr class='tab_bg_2'>";
-echo "<td class='right'>" . __('Start date') . "</td><td>";
-\Html::showDateField("date1", ['value' => $_GET["date1"]]);
-echo "</td>";
+echo '<tr class="tab_bg_2">';
+echo '<td class="right">'.__('Start date').'</td><td>';
+\Html::showDateField('date1', ['value' => $_GET["date1"]]);
+echo '</td>';
 
-echo "<td rowspan='2' class='center'>";
-echo "<input type='submit' class='btn btn-primary' name='submit' value=\"" . __s('Display report') . "\"></td>" .
-     "</tr>";
+echo '<td rowspan="2" class="center">';
+echo '<input type="submit" class="btn btn-primary" name="submit" value="'.__s('Display report').'"></td>'.
+     '</tr>';
 
-echo "<tr class='tab_bg_2'><td class='right'>" . __('End date') . "</td><td>";
-\Html::showDateField("date2", ['value' => $_GET["date2"]]);
-echo "</td></tr>";
-echo "</table>";
-echo "</form>";
-echo "</div>";
+echo '<tr class="tab_bg_2"><td class="right">'.__('End date').'</td><td>';
+\Html::showDateField('date2', ['value' => $_GET["date2"]]);
+echo '</td></tr>';
+echo '</table>';
+echo '</form>';
+echo '</div>';
 
 /*$req = $DB->request([
     'SELECT'    => [

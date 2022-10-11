@@ -56,8 +56,6 @@ class Process extends \CommonDBTM
      *
     **/
     static function postShowItem($item) {
-        //print_r($item);
-        //die();
         return $item;
     }
 

@@ -61,7 +61,7 @@ class Cron extends \CommonDBTM
   
     static function cronSendMessageTelegeramETN($task) {
         global $CFG_GLPI, $DB;
-
+        return true;
         try {
             $bot = new \TelegramBot\Api\BotApi(Config::getOption('bot_token'));
             //$bot = new \TelegramBot\Api\BotApi($token);
@@ -96,7 +96,7 @@ class Cron extends \CommonDBTM
             $message = "По заявке ".$ticketURL." получена низкая оценка - ".$rate."\n";
             $message .= $reqTitle.implode(', ', $requesters)."\n";
             $message .= $specTitle.implode(', ', $assigns)."\n";
-            $bot->sendMessage('383009633', $message);
+            //$bot->sendMessage('383009633', $message);
             $config = Config::getConfig();
 
             foreach($bot->getUpdates() as $update){
@@ -136,31 +136,31 @@ class Cron extends \CommonDBTM
         try {
             $bot = new \TelegramBot\Api\BotApi(Config::getOption('bot_token'));
             $config = Config::getConfig();
-
             foreach($bot->getUpdates($config['updateId'] + 1) as $update){
-                $message = $update->getMessage();
-                $id = $message->getChat()->getId();
-                $username = $message->getChat()->getUsername();
-                switch(Chat::updateChat($username, $id)) {
-                    case 1:
-                        $text = __('Ваш ID успешно зарегистрирован!', 'etn');
-                        break;
-                    case 2:
-                        $text = __('Ваш ID успешно обновлен!', 'etn');
-                        break;
-                    case 3:
-                        $text = __('Вы уже зарегистрированы!', 'etn');
-                        break;
-                    default:
-                        $text = __('Ошибка регистрации!', 'etn');
+                if($message = $update->getMessage()) {
+                    $id = $message->getChat()->getId();
+                    $username = $message->getChat()->getUsername();
+                    switch(Chat::updateChat($username, $id)) {
+                        case 1:
+                            $text = __('Ваш ID успешно зарегистрирован!', 'etn');
+                            break;
+                        case 2:
+                            $text = __('Ваш ID успешно обновлен!', 'etn');
+                            break;
+                        case 3:
+                            $text = __('Вы уже зарегистрированы!', 'etn');
+                            break;
+                        default:
+                            $text = __('Ошибка регистрации!', 'etn');
+                    }
+                    $bot->sendMessage($id, $text);
                 }
-                $bot->sendMessage($id, $text);
             }
 
             if(isset($update)) {
                 Config::updateConfig(['updateId' => $update->getUpdateId()]);
             }
-                
+            
         } catch (Exception $e) {
             $e->getMessage();
             print_r($e->getMessage());
