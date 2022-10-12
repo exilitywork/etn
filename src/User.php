@@ -49,7 +49,6 @@ class User extends \CommonDBTM
     }
 
     static function showUsernameField($params) {
-        print_r($_REQUEST['_glpi_tab']);
         if($_REQUEST['_glpi_tab'] == 'User$1' || $_REQUEST['_glpi_tab'] == 'User$main') {
             $item = $params['item'];
             $options = $params['options'];
