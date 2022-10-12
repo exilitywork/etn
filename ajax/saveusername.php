@@ -43,9 +43,9 @@ $username = $_POST['username'];
 try {
     $user = new User();
     $u = current($user->find(['users_id' => $userID], [], 1));
+    $user->fields['users_id'] = $userID;
+    $user->fields['username'] = $username;
     if($u) {
-        $user->fields['users_id'] = $userID;
-        $user->fields['username'] = $username;
         if($u['username'] != $username) {
             $user->fields['id'] = $u['id'];
             $user->updateInDB(array_keys($user->fields));

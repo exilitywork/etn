@@ -136,24 +136,26 @@ class Cron extends \CommonDBTM
         try {
             $bot = new \TelegramBot\Api\BotApi(Config::getOption('bot_token'));
             $config = Config::getConfig();
+            $config['updateId'] = isset($config['updateId']) ? $config['updateId'] : 0;
             foreach($bot->getUpdates($config['updateId'] + 1) as $update){
                 if($message = $update->getMessage()) {
                     $id = $message->getChat()->getId();
-                    $username = $message->getChat()->getUsername();
-                    switch(Chat::updateChat($username, $id)) {
-                        case 1:
-                            $text = __('Ваш ID успешно зарегистрирован!', 'etn');
-                            break;
-                        case 2:
-                            $text = __('Ваш ID успешно обновлен!', 'etn');
-                            break;
-                        case 3:
-                            $text = __('Вы уже зарегистрированы!', 'etn');
-                            break;
-                        default:
-                            $text = __('Ошибка регистрации!', 'etn');
+                    if($username = $message->getChat()->getUsername()) {
+                        switch(Chat::updateChat($username, $id)) {
+                            case 1:
+                                $text = __('Ваш ID успешно зарегистрирован!', 'etn');
+                                break;
+                            case 2:
+                                $text = __('Ваш ID успешно обновлен!', 'etn');
+                                break;
+                            case 3:
+                                $text = __('Вы уже зарегистрированы!', 'etn');
+                                break;
+                            default:
+                                $text = __('Ошибка регистрации!', 'etn');
+                        }
+                        $bot->sendMessage($id, $text);
                     }
-                    $bot->sendMessage($id, $text);
                 }
             }
 

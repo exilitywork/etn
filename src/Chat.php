@@ -85,7 +85,7 @@ class Chat extends \CommonDBTM
      *
      * @return string
     **/
-    static function getChat(string $username) {
+    static function getChat($username) {
         $id = false;
         $chat = new self;
         try {
