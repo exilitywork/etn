@@ -79,6 +79,7 @@ if(isset($_REQUEST['tickets_id']) && isset($_REQUEST['users_id'])){
             $r->fields['status'] = 1;
             $r->fields['id'] = $rating['id'];
             $r->fields['tickets_id'] = $_REQUEST['tickets_id'];
+            $r->fields['users_id'] = $_REQUEST['users_id'];
             $r->updateInDB(array_keys($r->fields));
             $successRate = true;
 

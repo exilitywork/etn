@@ -65,6 +65,43 @@ class Rating extends \CommonDBTM
         $menu['links']['config']    = '/plugins/etn/front/config.php';
         return $menu;
     }
+
+    /**
+     *  @see CommonGLPI::getMenuContent()
+     *
+     *  @since version 0.5.6
+    **/
+    static function getRatingByTicketId($id) {
+        global $CFG_GLPI;
+
+        $menu = array();
+
+        $menu['title']              = self::getMenuName();
+        $menu['icon']               = 'far fa-star';
+        $menu['page']               = '/plugins/etn/front/rating.php';
+        $menu['links']['config']    = '/plugins/etn/front/config.php';
+        return $menu;
+    }
+
+    /**
+     *  get user's ID who rated ticket
+     *
+     *  @param $id            integer
+     *
+     *  @return string|bool
+    **/
+    static function getUserNameByTicketId($id) {
+        global $DB;
+
+        $rating = new self;
+        if($r = current($rating->find(['tickets_id' => $id], [], 1))) {
+            $u = new \User();
+            if($user = current($u->find(['id' => $r['users_id']]))) {
+                return $user['realname'].' '.$user['firstname'];
+            };
+        }
+        return false;
+    }
     
 }
 ?>

@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_ratings`
 (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `tickets_id` INT UNSIGNED NOT NULL,
+    `users_id` INT UNSIGNED,
     `status` BOOL DEFAULT 0,
     `date_create` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `date_mod` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

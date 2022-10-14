@@ -49,9 +49,29 @@ class User extends \CommonDBTM
     }
 
     static function showUsernameField($params) {
+        $item = $params['item'];
+        $options = $params['options'];
+        
+        if($item->getType() == 'Ticket' && $_REQUEST['_glpi_tab'] == 'Ticket$main' && $item->fields['status'] >= 5) {
+            $ratingUser = 1;
+            $satisfaction = new \TicketSatisfaction();
+            if($satisfaction = current($satisfaction->find(['tickets_id' => $item->fields['id']], [], 1))) {
+                if(!empty($satisfaction['satisfaction'])) {
+                    $color = 'green';
+                    $minRating = Config::getOption('min_rating');
+                    if($satisfaction['satisfaction'] < ($minRating ? $minRating : 4)) $color = 'red';
+                    echo '
+                    <div class="form-field row col-12 mb-2">
+                        <label class="col-form-label col-xxl-4 text-xxl-end" for="">Оценка</label>
+                        <div class="col-xxl-8  field-container">
+                            <span class="form-control-plaintext"><span><i class="fas fa-'.$satisfaction['satisfaction'].'" style="color: '.$color.'"></i> - '.Rating::getUserNameByTicketId($item->fields['id']).'</span></span>
+                        </div>
+                    </div>
+                ';
+                }
+            }
+        }
         if($_REQUEST['_glpi_tab'] == 'User$1' || $_REQUEST['_glpi_tab'] == 'User$main') {
-            $item = $params['item'];
-            $options = $params['options'];
             $username = null;
             $id = null;
             $isPref = false;
