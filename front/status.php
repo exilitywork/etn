@@ -52,6 +52,9 @@ $error              = false;
 $isSolved           = false;
 
 if(isset($_REQUEST['tickets_id']) && isset($_REQUEST['users_id'])){
+    /*$t = new \Ticket();
+    $ticket = current($t->find(['id' => $_REQUEST['tickets_id']], [], 1));
+    if(isset($_REQUEST['rating']) && count($ticket) && $ticket['status'] < 6){*/
     if(isset($_REQUEST['rating'])){
         $status = $_REQUEST['rating'];
         $r = new Rating();

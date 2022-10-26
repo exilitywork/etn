@@ -61,13 +61,13 @@ class User extends \CommonDBTM
                     $minRating = Config::getOption('min_rating');
                     if($satisfaction['satisfaction'] < ($minRating ? $minRating : 4)) $color = 'red';
                     echo '
-                    <div class="form-field row col-12 mb-2">
-                        <label class="col-form-label col-xxl-4 text-xxl-end" for="">Оценка</label>
-                        <div class="col-xxl-8  field-container">
-                            <span class="form-control-plaintext"><span><i class="fas fa-'.$satisfaction['satisfaction'].'" style="color: '.$color.'"></i> - '.Rating::getUserNameByTicketId($item->fields['id']).'</span></span>
+                        <div class="form-field row col-12 mb-2">
+                            <label class="col-form-label col-xxl-4 text-xxl-end" for="">Оценка</label>
+                            <div class="col-xxl-8  field-container">
+                                <span class="form-control-plaintext"><span><i class="fas fa-'.$satisfaction['satisfaction'].'" style="color: '.$color.'"></i> - '.Rating::getUserNameByTicketId($item->fields['id']).'</span></span>
+                            </div>
                         </div>
-                    </div>
-                ';
+                    ';
                 }
             }
         }

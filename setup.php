@@ -62,6 +62,7 @@ function plugin_init_etn()
 
     //$PLUGIN_HOOKS['post_show_item']['etn'] = ['GlpiPlugin\Etn\Process', 'postShowItem'];
     $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['etn'] = ['User' => ['GlpiPlugin\Etn\User', 'updateUser']];
+    $PLUGIN_HOOKS[Hooks::PRE_ITEM_ADD]['etn'] = ['ITILFollowup' => ['GlpiPlugin\Etn\Followup', 'addFollowup']];
     $PLUGIN_HOOKS[Hooks::ITEM_GET_DATA]['etn'] = ['NotificationTargetTicket' => ['GlpiPlugin\Etn\Process', 'modifyNotification']];
     //$PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['etn'] = ['User' => ['GlpiPlugin\Etn\Telegram', 'showUsernameField']];
     $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['etn'] = ['GlpiPlugin\Etn\User', 'showUsernameField'];
