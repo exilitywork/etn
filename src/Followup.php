@@ -46,12 +46,33 @@ class Followup extends \CommonDBTM
     static function addFollowup($item) {
         global $CFG_GLPI;
 
-        // is temporary BAD! solution for specific cases
-        if((strpos($item->input['content'], $CFG_GLPI['admin_email']) === 0 || strpos($item->input['content'], $CFG_GLPI['admin_email']) > 0)
+         // is temporary BAD! solution for specific cases
+        $e = new \Entity();
+        $mails = [];
+        if(!empty($CFG_GLPI['admin_email'])) array_push($mails, $CFG_GLPI['admin_email']);
+        if(!empty($CFG_GLPI['smtp_sender'])) array_push($mails, $CFG_GLPI['smtp_sender']);
+        if(!empty($CFG_GLPI['replyto_email'])) array_push($mails, $CFG_GLPI['replyto_email']);
+        if(!empty($CFG_GLPI['noreply_email'])) array_push($mails, $CFG_GLPI['noreply_email']);
+        $entities = $e->find();
+        foreach($entities as $entity) {
+            if(!empty($entity['admin_email'])) array_push($mails, $entity['admin_email']);
+            if(!empty($entity['from_email'])) array_push($mails, $entity['from_email']);
+            if(!empty($entity['replyto_email'])) array_push($mails, $entity['replyto_email']);
+            if(!empty($entity['noreply_email'])) array_push($mails, $entity['noreply_email']);
+        }
+        $mails = array_unique($mails);
+        $hasMail = false;
+        foreach($mails as $mail) {
+            if(strpos($item->input['content'], $mail) === 0 || strpos($item->input['content'], $mail) > 0) {
+                $hasMail = true;
+                break;
+            }
+        }
+        if($hasMail
             && ((strpos($item->input['content'], date('d.m.Y')) === 0 || strpos($item->input['content'], date('d.m.Y')) > 0)
                 || (strpos($item->input['content'],'From:') === 0 || strpos($item->input['content'], 'From:') > 0)
                 || (strpos($item->input['content'], 'От:') === 0 || strpos($item->input['content'], 'От:') > 0))) {
-            $item->input['content'] = explode($CFG_GLPI['admin_email'], $item->input['content'])[0];
+            $item->input['content'] = explode($mail, $item->input['content'])[0];
             $arrContent = explode(date('d.m.Y'), $item->input['content']);
             if (count($arrContent) > 2) {
                 unset($arrContent[count($arrContent) - 1]);
