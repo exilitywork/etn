@@ -50,6 +50,7 @@ class Followup extends \CommonDBTM
         $imgs = [];
         $e = new \Entity();
         $mails = [];
+        $trash = '';
         if(!empty($CFG_GLPI['admin_email'])) array_push($mails, $CFG_GLPI['admin_email']);
         if(!empty($CFG_GLPI['smtp_sender'])) array_push($mails, $CFG_GLPI['smtp_sender']);
         if(!empty($CFG_GLPI['replyto_email'])) array_push($mails, $CFG_GLPI['replyto_email']);
@@ -73,11 +74,19 @@ class Followup extends \CommonDBTM
             && ((strpos($item->input['content'], date('d.m.Y')) === 0 || strpos($item->input['content'], date('d.m.Y')) > 0)
                 || (strpos($item->input['content'],'From:') === 0 || strpos($item->input['content'], 'From:') > 0)
                 || (strpos($item->input['content'], 'От:') === 0 || strpos($item->input['content'], 'От:') > 0))) {
-            while(preg_match('(#[a-z0-9-.]+#)', explode($mail, $item->input['content'])[1], $matches)) {
-                array_push($imgs, $matches[0]);
-                explode($mail, $item->input['content'])[1] = str_replace($matches[0], '', explode($mail, $item->input['content'])[1]);
+            $arrContent = explode($mail, $item->input['content']);
+            if(count($arrContent) > 2) {
+                for($i = 1; $i < count($arrContent); $i++) {
+                    $trash .= $arrContent[$i];
+                }
+            } else {
+                $trash = $arrContent[1];
             }
-            $item->input['content'] = explode($mail, $item->input['content'])[0];
+            while(preg_match('(#[a-z0-9-.]+#)', $trash, $matches)) {
+                array_push($imgs, $matches[0]);
+                $trash = str_replace($matches[0], '', $trash);
+            }
+            $item->input['content'] = $arrContent[0];
             $arrContent = explode(date('d.m.Y'), $item->input['content']);
             if (count($arrContent) > 2) {
                 unset($arrContent[count($arrContent) - 1]);
