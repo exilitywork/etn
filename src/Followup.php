@@ -46,7 +46,8 @@ class Followup extends \CommonDBTM
     static function addFollowup($item) {
         global $CFG_GLPI;
 
-         // is temporary BAD! solution for specific cases
+        // is temporary BAD! solution for specific cases
+        $imgs = [];
         $e = new \Entity();
         $mails = [];
         if(!empty($CFG_GLPI['admin_email'])) array_push($mails, $CFG_GLPI['admin_email']);
@@ -72,6 +73,10 @@ class Followup extends \CommonDBTM
             && ((strpos($item->input['content'], date('d.m.Y')) === 0 || strpos($item->input['content'], date('d.m.Y')) > 0)
                 || (strpos($item->input['content'],'From:') === 0 || strpos($item->input['content'], 'From:') > 0)
                 || (strpos($item->input['content'], 'От:') === 0 || strpos($item->input['content'], 'От:') > 0))) {
+            while(preg_match('(#[a-z0-9-.]+#)', explode($mail, $item->input['content'])[1], $matches)) {
+                array_push($imgs, $matches[0]);
+                explode($mail, $item->input['content'])[1] = str_replace($matches[0], '', explode($mail, $item->input['content'])[1]);
+            }
             $item->input['content'] = explode($mail, $item->input['content'])[0];
             $arrContent = explode(date('d.m.Y'), $item->input['content']);
             if (count($arrContent) > 2) {
@@ -82,6 +87,7 @@ class Followup extends \CommonDBTM
             }
             $item->input['content'] = explode('From:', $item->input['content'])[0];
             $item->input['content'] = explode('От:', $item->input['content'])[0];
+            $item->input['content'] = $item->input['content'].'&#60;/div&#62;&#60;div style=\"display:none;\"&#62;'.implode('<br>', $imgs).'&#60;/div&#62;';
         }
     }
 }
