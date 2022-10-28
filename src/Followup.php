@@ -105,7 +105,7 @@ class Followup extends \CommonDBTM
             $item->input['content'] = str_replace('&#38;nbsp;', '', $item->input['content']);
             //file_put_contents('content.txt', $item->input['content']);
             $item->input['content'] = preg_replace('(<![ a-zA-Z0-9\[\]!-]+>)', '', $item->input['content']);
-            $item->input['content'] = str_replace('&#38;&#43;', '+', $item->input['content']);
+            $item->input['content'] = str_replace('&#38;#43;', '+', $item->input['content']);
         }
     }
 }
