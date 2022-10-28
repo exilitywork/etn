@@ -96,7 +96,15 @@ class Followup extends \CommonDBTM
             }
             $item->input['content'] = explode('From:', $item->input['content'])[0];
             $item->input['content'] = explode('От:', $item->input['content'])[0];
-            $item->input['content'] = $item->input['content'].'&#60;/div&#62;&#60;div style=\"display:none;\"&#62;'.implode('<br>', $imgs).'&#60;/div&#62;';
+            $arrSlash = explode('/', $item->input['content']);
+            $arrGt = explode('&', $arrSlash[count($arrSlash) - 1]);
+            $arrSlash[count($arrSlash) - 1]  = $arrGt[0].'&#62;&#60;div style="display:none;"&#62;'.implode('<br>', $imgs).'&#60;/div&#62;';
+            $item->input['content'] = implode('/', $arrSlash);
+            $item->input['content'] = str_replace('&#62;', '>', $item->input['content']);
+            $item->input['content'] = str_replace('&#60;', '<', $item->input['content']);
+            $item->input['content'] = str_replace('&#38;nbsp;', '', $item->input['content']);
+            //file_put_contents('content.txt', $item->input['content']);
+            $item->input['content'] = preg_replace('(<![ a-zA-Z0-9\[\]!-]+>)', '', $item->input['content']);
         }
     }
 }
