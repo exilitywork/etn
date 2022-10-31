@@ -55,7 +55,7 @@ class Telegram extends \CommonDBTM
      *
      * @return bool
     **/
-    static function sendRatingMessage($ticketID, $rate) {
+    static function sendRatingMessage($ticketID, $rate, $comment = '') {
         global $CFG_GLPI;
 
         try {
@@ -82,7 +82,7 @@ class Telegram extends \CommonDBTM
             }
             if(count($reqs) > 1) $reqTitle = __('Инициаторы', 'etn').': ';
             if(count($specs) > 1) $specTitle = __('Специалисты', 'etn').': ';
-            $message = "По заявке ".$ticketURL." получена низкая оценка - ".$rate."\n";
+            $message = "По заявке ".$ticketURL." получена низкая оценка - ".$rate.". Комментарий: ".$comment.".\n";
             $message .= $reqTitle.implode(', ', $requesters)."\n";
             $message .= $specTitle.implode(', ', $assigns);
 
@@ -138,7 +138,7 @@ class Telegram extends \CommonDBTM
         try {
             $bot = new \TelegramBot\Api\BotApi(Config::getOption('bot_token'));
             return $bot->getMe()->getUsername();
-        } catch (Exception $e) {
+        } catch (\TelegramBot\Api\Exception $e) {
             $e->getMessage();
             return false;
         }

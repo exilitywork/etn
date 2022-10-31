@@ -91,6 +91,17 @@
                                             {% elseif status == 0 %}
                                                 <i class="fas fa-0" style="font-size: 100px;"></i>
                                             {% endif %}
+                                            {% if no_comment %}
+                                                <form>
+                                                    <br>
+                                                    <p>{{ __('Укажите причину, иначе оценка не будет учтена:', 'etn') }}</p>
+                                                    <textarea name="comment" rows="3" cols="30" required></textarea>
+                                                    <input type="hidden" name="rating" value="{{ status }}"></input>
+                                                    <input type="hidden" name="tickets_id" value="{{ tickets_id }}"></input>
+                                                    <input type="hidden" name="users_id" value="{{ users_id }}"></input>
+                                                    <input type="submit" class="btn btn-primary">
+                                                </form>
+                                            {% endif %}
                                         </h2>
                                     </div>
                                     {% if success_rate %}
@@ -121,18 +132,20 @@
                                 <h2 class="mx-auto" style="text-align: center;">{{ __('Приоритет заявки максимальный!', 'etn') }}</h2>
                             </div>
                         {% endif %}
-                        {% if no_login %}
-                            <div>
-                                <button name="login" class="btn btn-primary w-100" tabindex="3" onclick="location.href = '{{ login_page }}';">
-                                    {{ __('Sign in') }}
-                                </button>
-                            </div>
-                        {% else %}
-                            <div>
-                                <button name="to-ticket" class="btn btn-primary w-100" tabindex="3" onclick="location.href = '{{ ticket_url }}';">
-                                    {{ __('Перейти к заявке', 'etn') }}
-                                </button>
-                            </div>
+                        {% if not no_comment %}
+                            {% if no_login %}
+                                <div>
+                                    <button name="login" class="btn btn-primary w-100" tabindex="3" onclick="location.href = '{{ login_page }}';">
+                                        {{ __('Sign in') }}
+                                    </button>
+                                </div>
+                            {% else %}
+                                <div>
+                                    <button name="to-ticket" class="btn btn-primary w-100" tabindex="3" onclick="location.href = '{{ ticket_url }}';">
+                                        {{ __('Перейти к заявке', 'etn') }}
+                                    </button>
+                                </div>
+                            {% endif %}
                         {% endif %}
                         {% if error %}
                             <div class="card-header mb-4">

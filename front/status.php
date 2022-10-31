@@ -50,6 +50,8 @@ $multiplePriority   = false;
 $status             = 0;
 $error              = false;
 $isSolved           = false;
+$noComment          = false;
+$comment            = '';
 
 if(isset($_REQUEST['tickets_id']) && isset($_REQUEST['users_id'])){
     /*$t = new \Ticket();
@@ -64,6 +66,8 @@ if(isset($_REQUEST['tickets_id']) && isset($_REQUEST['users_id'])){
         if(isset($rating['status']) && $rating['status']) {
             $multipleRate = true;
             $status = isset($ticket['satisfaction']) ? $ticket['satisfaction'] : -1;
+        } else if($_REQUEST['rating'] < 4 && empty($_REQUEST['comment'])) {
+            $noComment = true;
         } else {
             if(!$ticket) {
                 $_REQUEST['date_answered'] = date('Y-m-d H:i:s');
@@ -73,6 +77,7 @@ if(isset($_REQUEST['tickets_id']) && isset($_REQUEST['users_id'])){
             }
             $ts->fields['date_answered'] = date('Y-m-d H:i:s');
             $ts->fields['satisfaction'] = $_REQUEST['rating'];
+            if(isset($_REQUEST['comment'])) $ts->fields['comment'] = $_REQUEST['comment'];
             $ts->fields['id'] = $ticket['id'];
             $ts->updateInDB(array_keys($ts->fields));
             if(!$rating) {
@@ -87,7 +92,11 @@ if(isset($_REQUEST['tickets_id']) && isset($_REQUEST['users_id'])){
             $successRate = true;
 
             $minRating = Config::getOption('min_rating');
-            if($status < ($minRating ? $minRating : 4)) Telegram::sendRatingMessage($_REQUEST['tickets_id'], $status);
+            try {
+                if($status < ($minRating ? $minRating : 4)) Telegram::sendRatingMessage($_REQUEST['tickets_id'], $status, $_REQUEST['comment']);
+            } catch (\TelegramBot\Api\Exception $e) {
+                $e->getMessage();
+            } 
         }
 
     }
@@ -135,13 +144,17 @@ TemplateRenderer::getInstance()->display('@etn/template.html.twig', [
     'ticket_url'            => $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].'/front/ticket.form.php?id='.$_REQUEST['tickets_id'],
     'success_rate'          => $successRate,
     'status'                => $status,
+    'tickets_id'            => $_REQUEST['tickets_id'],
+    'users_id'              => $_REQUEST['users_id'],
     'multiple_rate'         => $multipleRate,
     'success_priority_up'   => $successPriority,
     'multiple_priority_up'  => $multiplePriority,
     'copyright_message'     => Html::getCopyrightMessage(false),
     'card_md_width'         => true,
     'error'                 => $error,
-    'is_solved'             => $isSolved
+    'is_solved'             => $isSolved,
+    'no_comment'            => $noComment,
+    'comment'               => $comment
 ]);
 
 if(Session::getLoginUserID()) {

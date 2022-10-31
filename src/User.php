@@ -66,6 +66,10 @@ class User extends \CommonDBTM
                             <div class="col-xxl-8  field-container">
                                 <span class="form-control-plaintext"><span><i class="fas fa-'.$satisfaction['satisfaction'].'" style="color: '.$color.'"></i> - '.Rating::getUserNameByTicketId($item->fields['id']).'</span></span>
                             </div>
+                            <label class="col-form-label col-xxl-4 text-xxl-end" for="">Комментарий</label>
+                            <div class="col-xxl-8  field-container">
+                                <span class="form-control-plaintext">'.$satisfaction['comment'].'</span>
+                            </div>
                         </div>
                     ';
                 }
