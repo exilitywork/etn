@@ -41,7 +41,7 @@ function plugin_etn_install() {
 
    if(!$DB->runFile(GLPI_ROOT . "/plugins/etn/sql/install.sql")) die("SQL error");
 
-   /*$cron = new \CronTask();
+   $cron = new \CronTask();
    if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'SendMessageTelegeramETN')) {
       \CronTask::Register('GlpiPlugin\Etn\Cron', 'SendMessageTelegeramETN', 300,
                            ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
@@ -49,7 +49,11 @@ function plugin_etn_install() {
    if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'ListenMessageTelegramETN')) {
       \CronTask::Register('GlpiPlugin\Etn\Cron', 'ListenMessageTelegramETN', 300,
                            ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
-   }*/
+   }
+   if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'SlaCalcETN')) {
+      \CronTask::Register('GlpiPlugin\Etn\Cron', 'SlaCalcETN', HOUR_TIMESTAMP,
+                           ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
+   }
 
    Ldap::updateConfig();
 

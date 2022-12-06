@@ -54,6 +54,8 @@ class Cron extends \CommonDBTM
                 return array('description' => __('Отправка уведомлений в Telegram', 'etn'));
             case 'ListenMessageTelegramETN':
                 return array('description' => __('Обработка новых сообщений в Telegram', 'etn'));
+            case 'SlaCalcETN':
+                return array('description' => __('Расчет статистики SLA заявок', 'etn'));
         }
   
         return array();
@@ -64,10 +66,7 @@ class Cron extends \CommonDBTM
         return true;
         try {
             $bot = new \TelegramBot\Api\BotApi(Config::getOption('bot_token'));
-            //$bot = new \TelegramBot\Api\BotApi($token);
 
-            //$bot->sendMessage('383009633', "TEST \n MESSAGE");
-            //die();
             $rate = 4;
             $ticketID = 262357;
             $requesters = [];
@@ -163,6 +162,20 @@ class Cron extends \CommonDBTM
                 Config::updateConfig(['updateId' => $update->getUpdateId()]);
             }
             
+        } catch (Exception $e) {
+            $e->getMessage();
+            print_r($e->getMessage());
+            $task->log($e->getMessage());
+            return false;
+        }
+        $task->addVolume(1);
+        return true;
+    }
+
+    static function cronSlaCalcETN($task) {
+        global $DB;
+        try {
+            SlaInfo::calculateSlaInfo();
         } catch (Exception $e) {
             $e->getMessage();
             print_r($e->getMessage());

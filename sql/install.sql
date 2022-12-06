@@ -52,4 +52,14 @@ CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_users`
     `username` VARCHAR(255),
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+
+CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_slainfos`
+(
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `date` VARCHAR(10) NOT NULL,
+    `groups_id` INT UNSIGNED NOT NULL,
+    `sla_all` INT UNSIGNED DEFAULT 0,
+    `sla_false` INT UNSIGNED DEFAULT 0,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
   

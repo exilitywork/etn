@@ -28,7 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
-define('PLUGIN_ETN_VERSION', '0.6.1');
+define('PLUGIN_ETN_VERSION', '0.9.0');
 
 // Minimal GLPI version, inclusive
 define("PLUGIN_ETN_MIN_GLPI_VERSION", "10.0.1");
@@ -37,6 +37,7 @@ define("PLUGIN_ETN_MAX_GLPI_VERSION", "10.0.99");
 
 use Glpi\Plugin\Hooks;
 use GlpiPlugin\Etn\Config;
+use GlpiPlugin\Etn\SlaInfo;
 
 require_once 'vendor/autoload.php';
 
@@ -60,17 +61,11 @@ function plugin_init_etn()
     if(\Session::haveRight('config', READ)) $menu['config'] = 'GlpiPlugin\Etn\Config';
     $PLUGIN_HOOKS['menu_toadd']['etn'] = $menu;
 
-    //$PLUGIN_HOOKS['post_show_item']['etn'] = ['GlpiPlugin\Etn\Process', 'postShowItem'];
     $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['etn'] = ['User' => ['GlpiPlugin\Etn\User', 'updateUser']];
     $PLUGIN_HOOKS[Hooks::PRE_ITEM_ADD]['etn'] = ['ITILFollowup' => ['GlpiPlugin\Etn\Followup', 'addFollowup']];
     $PLUGIN_HOOKS[Hooks::ITEM_GET_DATA]['etn'] = ['NotificationTargetTicket' => ['GlpiPlugin\Etn\Process', 'modifyNotification']];
-    //$PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['etn'] = ['User' => ['GlpiPlugin\Etn\Telegram', 'showUsernameField']];
     $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['etn'] = ['GlpiPlugin\Etn\User', 'showUsernameField'];
     $PLUGIN_HOOKS[Hooks::POST_SHOW_TAB]['etn'] = ['GlpiPlugin\Etn\User', 'showUsernameField'];
-    //$PLUGIN_HOOKS[Hooks::PRE_SHOW_TAB]['etn'] = ['GlpiPlugin\Etn\User', 'showUsernameField'];
-    //$PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['etn'] = ['GlpiPlugin\Etn\Process', 'postShowItem'];
-    //$PLUGIN_HOOKS['item_add']['etn'] = array('User' => array('GlpiPlugin\Etn\User', 'item_add_user'));
-    //$PLUGIN_HOOKS['pre_item_update']['etn'] = array('User' => array('PluginTelegrambotUser', 'item_update_user'));
 }
 
 /**

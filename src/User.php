@@ -75,7 +75,7 @@ class User extends \CommonDBTM
                 }
             }
         }
-        if($_REQUEST['_glpi_tab'] == 'User$1' || $_REQUEST['_glpi_tab'] == 'User$main') {
+        if(isset($_REQUEST['_glpi_tab']) && ($_REQUEST['_glpi_tab'] == 'User$1' || $_REQUEST['_glpi_tab'] == 'User$main')) {
             $username = null;
             $id = null;
             $isPref = false;
