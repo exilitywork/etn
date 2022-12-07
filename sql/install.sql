@@ -55,9 +55,9 @@ CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_users`
 
 CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_slainfos`
 (
-    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `id` INT UNSIGNED NOT NULL,
     `date` VARCHAR(10) NOT NULL,
-    `groups_id` INT UNSIGNED NOT NULL,
+    `groups_id` VARCHAR(250) NOT NULL,
     `sla_all` INT UNSIGNED DEFAULT 0,
     `sla_false` INT UNSIGNED DEFAULT 0,
     PRIMARY KEY (`id`)

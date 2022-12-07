@@ -65,18 +65,19 @@ class SlaInfo extends \CommonDBTM
 
             $reqAllSla = $DB->request([
                 'SELECT'    => [
-                    'COUNT DISTINCT' => 'glpi_tickets.id AS count',
+                    'glpi_tickets.id AS id',
                     new \QueryExpression('DATE_FORMAT(`glpi_tickets`.`solvedate`, \'%Y-%m-%d\') as `sla_date`')
                 ],
+                'DISTINCT' => true,
                 'FROM'      => 'glpi_tickets',
                 'LEFT JOIN' => [
-                'glpi_tickets_users' => [
+                    'glpi_tickets_users' => [
                         'FKEY' => [
                             'glpi_tickets' => 'id',
                             'glpi_tickets_users' => 'tickets_id',
                         ]
                     ],
-                'glpi_groups_users' => [
+                    'glpi_groups_users' => [
                         'FKEY' => [
                             'glpi_groups_users' => 'users_id',
                             'glpi_tickets_users' => 'users_id',
@@ -103,18 +104,28 @@ class SlaInfo extends \CommonDBTM
                     'glpi_tickets_users.type'       => 2,
                     'glpi_tickets.is_deleted'       => 0
                 ],
-                'GROUPBY' => 'sla_date'
+                'ORDERBY' => 'sla_date'
             ]);
             if(count($reqAllSla)) {
                 foreach ($reqAllSla as $id => $row) {
-                    $data[$group['id']][$row['sla_date']]['sla_all'] = $row['count'];
+                    
+                    if(isset($data[$row['id']]['groups_id'])) {
+                        $groups = explode(',', $data[$row['id']]['groups_id']);
+                        if(!in_array($group['id'], $groups)) $data[$row['id']]['groups_id'] = $data[$row['id']]['groups_id'].','.$group['id'];
+                    } else {
+                        $data[$row['id']]['groups_id'] = $group['id'];
+                    }
+                    $data[$row['id']]['sla_date'] = $row['sla_date'];
+                    $data[$row['id']]['sla_all'] = 1;
                 }
             }
+            
             $reqAllFalse = $DB->request([
                 'SELECT'    => [
-                    'COUNT DISTINCT' => 'glpi_tickets.id AS count',
+                    'glpi_tickets.id AS id',
                     new \QueryExpression('DATE_FORMAT(`glpi_tickets`.`solvedate`, \'%Y-%m-%d\') as `sla_date`')
                 ],
+                'DISTINCT' => true,
                 'FROM'      => 'glpi_tickets',
                 'LEFT JOIN' => [
                    'glpi_tickets_users' => [
@@ -154,35 +165,37 @@ class SlaInfo extends \CommonDBTM
                     'glpi_tickets_users.type'       => 2,
                     'glpi_tickets.is_deleted'       => 0
                 ],
-                'GROUPBY' => 'sla_date'
+                 'ORDERBY' => 'sla_date'
             ]);
             if(count($reqAllFalse)) {
                 foreach ($reqAllFalse as $id => $row) {
-                    $data[$group['id']][$row['sla_date']]['sla_false'] = $row['count'];
+                    if(isset($data[$row['id']]['groups_id'])) {
+                        $groups = explode(',', $data[$row['id']]['groups_id']);
+                        if(!in_array($group['id'], $groups)) $data[$row['id']]['groups_id'] = $data[$row['id']]['groups_id'].','.$group['id'];
+                    } else {
+                        $data[$row['id']]['groups_id'] = $group['id'];
+                    }
+                    $data[$row['id']]['sla_date'] = $row['sla_date'];
+                    $data[$row['id']]['sla_false'] = 1;
                 }
             }
-            
         }
-        foreach($data as $group => $slas) {
-            ksort($slas);
+        
+        foreach($data as $id => $sla) {
             $s->fields['sla_all'] = 0;
             $s->fields['sla_false'] = 0;
-            foreach($slas as $date => $sla) {            
-                unset($s->fields['id']);
-                $s->fields['date']      = $date;
-                $s->fields['groups_id'] = $group;
-                $s->fields['sla_all']   = $s->fields['sla_all'] + (isset($sla['sla_all']) ? $sla['sla_all'] : 0);
-                $s->fields['sla_false'] = $s->fields['sla_false'] + (isset($sla['sla_false']) ? $sla['sla_false'] : 0);
-                if($item = current($s->find(['date' => $date, 'groups_id' => $group]))) {
-                    if($item['sla_all'] != $s->fields['sla_all'] || $item['sla_false'] != $s->fields['sla_false']) {
-                        $s->fields['id'] = $item['id'];
-                        $s->updateInDB(array_keys($s->fields));
-                    }
-                } else {
-                    $s->addToDB();
+            $s->fields['id']      = $id;
+            $s->fields['date']      = $sla['sla_date'];
+            $s->fields['groups_id'] = $sla['groups_id'];
+            $s->fields['sla_all']   = (isset($sla['sla_all']) ? $sla['sla_all'] : 0);
+            $s->fields['sla_false'] = (isset($sla['sla_false']) ? $sla['sla_false'] : 0);
+            if($item = current($s->find(['id' => $id]))) {
+                if($item['sla_all'] != $s->fields['sla_all'] || $item['sla_false'] != $s->fields['sla_false'] || $item['groups_id'] != $s->fields['groups_id']) {
+                    $s->updateInDB(array_keys($s->fields));
                 }
-            }
-            
+            } else {
+                $s->addToDB();
+            }  
         }        
     }
 }
