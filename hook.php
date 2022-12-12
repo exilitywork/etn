@@ -50,8 +50,8 @@ function plugin_etn_install() {
       \CronTask::Register('GlpiPlugin\Etn\Cron', 'ListenMessageTelegramETN', 300,
                            ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
    }
-   if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'SlaCalcETN')) {
-      \CronTask::Register('GlpiPlugin\Etn\Cron', 'SlaCalcETN', HOUR_TIMESTAMP,
+   if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'TicketStatCalculationETN')) {
+      \CronTask::Register('GlpiPlugin\Etn\Cron', 'TicketStatCalculationETN', HOUR_TIMESTAMP,
                            ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
    }
 

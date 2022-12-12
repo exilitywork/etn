@@ -172,10 +172,11 @@ class Cron extends \CommonDBTM
         return true;
     }
 
-    static function cronSlaCalcETN($task) {
+    static function cronTicketStatCalculationETN($task) {
         global $DB;
         try {
             SlaInfo::calculateSlaInfo();
+            OpenTicketsInfo::calculateInfo();
         } catch (Exception $e) {
             $e->getMessage();
             print_r($e->getMessage());
