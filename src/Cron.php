@@ -186,5 +186,72 @@ class Cron extends \CommonDBTM
         $task->addVolume(1);
         return true;
     }
+
+    static function cronSendTopRequestersETN($task) {
+        global $DB;
+
+        if(date('Y-m-d H') != gmdate('Y-m-d', strtotime('last sat of')).' 10') {
+            return true;
+        }
+        
+        try {
+            $top = [];
+            $iterator = $DB->request([
+                'SELECT'    => [
+                    'COUNT DISTINCT' => 'glpi_tickets.id1 AS cnt',
+                    new \QueryExpression('CONCAT(glpi_users.realname, " ", glpi_users.firstname) AS requester'),
+                ],
+                'FROM'      => 'glpi_tickets',
+                'LEFT JOIN' => [
+                    'glpi_tickets_users' => [
+                        'FKEY' => [
+                            'glpi_tickets' => 'id',
+                            'glpi_tickets_users' => 'tickets_id',
+                        ]
+                    ],
+                    'glpi_users' => [
+                        'FKEY' => [
+                            'glpi_users' => 'id',
+                            'glpi_tickets_users' => 'users_id',
+                        ]
+                    ],
+                ],
+                'WHERE'     => [
+                    'glpi_users.is_active'          => 1,
+                    'glpi_tickets_users.type'       => 1,
+                    'glpi_tickets.is_deleted'       => 0,
+                    new \QueryExpression('glpi_tickets.date >= DATE_FORMAT(NOW(), \'%Y-%m-01\')')
+                ],
+                'GROUPBY' => 'requester',
+                'ORDERBY' => 'cnt DESC',
+                'LIMIT' => 10
+            ]);
+            foreach($iterator as $id => $row) {
+                $row['number'] = $id + 1;
+                print_r($row);
+                print_r('<br>');
+                array_push($top, $row);
+            }
+            
+            if ($cnt = count($top)) {
+                $params =  [
+                    'entities_id'  => 0,
+                    'toprequesters' => $top
+                ];
+                if(\NotificationEvent::raiseEvent('top_requesters', new TopRequesters(), $params)) {
+                    $task->addVolume($cnt);
+                    $task->log("Action successfully completed");
+                    return true;
+                }
+            }
+        } catch (Exception $e) {
+            $e->getMessage();
+            print_r($e->getMessage());
+            $task->log($e->getMessage());
+            return false;
+        }
+        return false;
+    }
+
 }
 ?>

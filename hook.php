@@ -54,6 +54,10 @@ function plugin_etn_install() {
       \CronTask::Register('GlpiPlugin\Etn\Cron', 'TicketStatCalculationETN', HOUR_TIMESTAMP,
                            ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
    }
+   if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'SendTopRequestersETN')) {
+      \CronTask::Register('GlpiPlugin\Etn\Cron', 'SendTopRequestersETN', HOUR_TIMESTAMP,
+                           ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
+   }
 
    Ldap::updateConfig();
 

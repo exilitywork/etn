@@ -153,20 +153,24 @@ class OpenTicketsInfo extends \CommonDBTM
             }
         }
         foreach($data as $id => $item) {
+	    unset($info->fields['satisfaction']);
+	    unset($info->fields['time_to_solve']);
+	    
             $info->fields['id']             = $id;
             $info->fields['groups_id']      = $item['groups_id'];
             $info->fields['status']         = $item['status'];
-            $info->fields['satisfaction']   = $item['satisfaction'];
-            $info->fields['time_to_solve']  = $item['time_to_solve'];
+            if($item['satisfaction'] > 0) $info->fields['satisfaction']   = $item['satisfaction'];
+            if($item['time_to_solve'] > 0) $info->fields['time_to_solve']  = $item['time_to_solve'];
             $info->fields['date_begin']     = (isset($item['date_begin']) ? $item['date_begin'] : '');
             $info->fields['date_end']       = (isset($item['date_end']) ? $item['date_end'] : '');
-            if($item = current($info->find(['id' => $id]))) {
-                if($item['date_begin'] != $info->fields['date_begin'] 
-                        || $item['date_end']        != $info->fields['date_end'] 
-                        || $item['groups_id']       != $info->fields['groups_id']
-                        || $item['status']          != $info->fields['status']
-                        || $item['satisfaction']    != $info->fields['satisfaction']
-                        || $item['time_to_solve']   != $info->fields['time_to_solve']) {
+            if($itemCur = current($info->find(['id' => $id]))) {
+                if($itemCur['date_begin'] != $info->fields['date_begin'] 
+                        || $itemCur['date_end']        != $info->fields['date_end'] 
+                        || $itemCur['groups_id']       != $info->fields['groups_id']
+                        || $itemCur['status']          != $info->fields['status']
+                        || ($info->fields['satisfaction'] > 0 && $itemCur['satisfaction'] != $info->fields['satisfaction'])
+                        || ($info->fields['time_to_solve'] > 0 && $itemCur['time_to_solve']   != $info->fields['time_to_solve'])
+                        ) {
                     $info->updateInDB(array_keys($info->fields));
                 }
             } else {

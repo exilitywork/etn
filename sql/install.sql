@@ -70,8 +70,13 @@ CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_openticketsinfos`
     `date_end` VARCHAR(10) NOT NULL,
     `groups_id` VARCHAR(250) NOT NULL,
     `status` INT UNSIGNED NOT NULL,
-    `satisfaction` INT UNSIGNED NOT NULL,
-    `time_to_solve` INT UNSIGNED NOT NULL,
+    `satisfaction` INT UNSIGNED,
+    `time_to_solve` INT UNSIGNED,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-  
+
+CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_toprequesters`
+(
+    `id` INT UNSIGNED NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;

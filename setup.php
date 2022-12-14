@@ -38,6 +38,7 @@ define("PLUGIN_ETN_MAX_GLPI_VERSION", "10.0.99");
 use Glpi\Plugin\Hooks;
 use GlpiPlugin\Etn\Config;
 use GlpiPlugin\Etn\SlaInfo;
+use GlpiPlugin\Etn\TopRequesters;
 
 require_once 'vendor/autoload.php';
 
@@ -66,6 +67,7 @@ function plugin_init_etn()
     $PLUGIN_HOOKS[Hooks::ITEM_GET_DATA]['etn'] = ['NotificationTargetTicket' => ['GlpiPlugin\Etn\Process', 'modifyNotification']];
     $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['etn'] = ['GlpiPlugin\Etn\User', 'showUsernameField'];
     $PLUGIN_HOOKS[Hooks::POST_SHOW_TAB]['etn'] = ['GlpiPlugin\Etn\User', 'showUsernameField'];
+    $CFG_GLPI["notificationtemplates_types"][] = TopRequesters::class;
 }
 
 /**
