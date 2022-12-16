@@ -198,7 +198,7 @@ class Cron extends \CommonDBTM
             $top = [];
             $iterator = $DB->request([
                 'SELECT'    => [
-                    'COUNT DISTINCT' => 'glpi_tickets.id1 AS cnt',
+                    'COUNT DISTINCT' => 'glpi_tickets.id AS cnt',
                     new \QueryExpression('CONCAT(glpi_users.realname, " ", glpi_users.firstname) AS requester'),
                 ],
                 'FROM'      => 'glpi_tickets',
@@ -228,8 +228,6 @@ class Cron extends \CommonDBTM
             ]);
             foreach($iterator as $id => $row) {
                 $row['number'] = $id + 1;
-                print_r($row);
-                print_r('<br>');
                 array_push($top, $row);
             }
             

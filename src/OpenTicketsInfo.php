@@ -99,7 +99,7 @@ class OpenTicketsInfo extends \CommonDBTM
                     new \QueryExpression('DATE_FORMAT(`glpi_tickets`.`date`, \'%Y-%m-%d\') as `date_begin`'),
                     new \QueryExpression('DATE_FORMAT(IFNULL(`glpi_tickets`.`closedate`, IFNULL(`glpi_tickets`.`solvedate`, `glpi_tickets`.`date_mod`)), \'%Y-%m-%d\') as `date_end`'),
                     'glpi_ticketsatisfactions.satisfaction as satisfaction',
-                    new \QueryExpression('TIMESTAMPDIFF(MINUTE, glpi_tickets.date, glpi_tickets.solvedate) as time_to_solve'),
+                    new \QueryExpression('TIMESTAMPDIFF(MINUTE, glpi_tickets.date, glpi_tickets.solvedate - glpi_tickets.waiting_duration / 60)  as time_to_solve'),
                 ],
                 'DISTINCT' => true,
                 'FROM'      => 'glpi_tickets',
