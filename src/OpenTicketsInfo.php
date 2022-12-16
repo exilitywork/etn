@@ -99,7 +99,7 @@ class OpenTicketsInfo extends \CommonDBTM
                     new \QueryExpression('DATE_FORMAT(`glpi_tickets`.`date`, \'%Y-%m-%d\') as `date_begin`'),
                     new \QueryExpression('DATE_FORMAT(IFNULL(`glpi_tickets`.`closedate`, IFNULL(`glpi_tickets`.`solvedate`, `glpi_tickets`.`date_mod`)), \'%Y-%m-%d\') as `date_end`'),
                     'glpi_ticketsatisfactions.satisfaction as satisfaction',
-                    new \QueryExpression('TIMESTAMPDIFF(MINUTE, glpi_tickets.date, glpi_tickets.solvedate - glpi_tickets.waiting_duration / 60)  as time_to_solve'),
+                    new \QueryExpression('TIMESTAMPDIFF(MINUTE, glpi_tickets.date, glpi_tickets.solvedate) - TRUNCATE(glpi_tickets.waiting_duration / 60, 0) as time_to_solve'),
                 ],
                 'DISTINCT' => true,
                 'FROM'      => 'glpi_tickets',
@@ -159,8 +159,8 @@ class OpenTicketsInfo extends \CommonDBTM
             $info->fields['id']             = $id;
             $info->fields['groups_id']      = $item['groups_id'];
             $info->fields['status']         = $item['status'];
-            if($item['satisfaction'] > 0) $info->fields['satisfaction']   = $item['satisfaction'];
-            if($item['time_to_solve'] > 0) $info->fields['time_to_solve']  = $item['time_to_solve'];
+            if($item['satisfaction'] > 0) $info->fields['satisfaction'] = $item['satisfaction'];
+            if($item['time_to_solve'] > 0) $info->fields['time_to_solve'] = $item['time_to_solve'];
             $info->fields['date_begin']     = (isset($item['date_begin']) ? $item['date_begin'] : '');
             $info->fields['date_end']       = (isset($item['date_end']) ? $item['date_end'] : '');
             if($itemCur = current($info->find(['id' => $id]))) {
@@ -168,8 +168,8 @@ class OpenTicketsInfo extends \CommonDBTM
                         || $itemCur['date_end']        != $info->fields['date_end'] 
                         || $itemCur['groups_id']       != $info->fields['groups_id']
                         || $itemCur['status']          != $info->fields['status']
-                        || ($info->fields['satisfaction'] > 0 && $itemCur['satisfaction'] != $info->fields['satisfaction'])
-                        || ($info->fields['time_to_solve'] > 0 && $itemCur['time_to_solve']   != $info->fields['time_to_solve'])
+                        || (isset($info->fields['satisfaction']) && $info->fields['satisfaction'] > 0 && $itemCur['satisfaction'] != $info->fields['satisfaction'])
+                        || (isset($info->fields['time_to_solve']) && $info->fields['time_to_solve'] > 0 && $itemCur['time_to_solve']   != $info->fields['time_to_solve'])
                         ) {
                     $info->updateInDB(array_keys($info->fields));
                 }
