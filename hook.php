@@ -28,8 +28,12 @@
  * -------------------------------------------------------------------------
  */
 
+use GlpiPlugin\Etn\InactionTime;
 use GlpiPlugin\Etn\Process;
 use GlpiPlugin\Etn\Ldap;
+use GlpiPlugin\Etn\User;
+use GlpiPlugin\Etn\NotificationTargetTopRequesters;
+use GlpiPlugin\Etn\NotificationTargetInactionTime;
 
 /**
  * Plugin install process
@@ -40,6 +44,9 @@ function plugin_etn_install() {
    global $DB;
 
    if(!$DB->runFile(GLPI_ROOT . "/plugins/etn/sql/install.sql")) die("SQL error");
+
+   NotificationTargetTopRequesters::init();
+   NotificationTargetInactionTime::init();
 
    $cron = new \CronTask();
    if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'SendMessageTelegeramETN')) {
@@ -56,6 +63,10 @@ function plugin_etn_install() {
    }
    if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'SendTopRequestersETN')) {
       \CronTask::Register('GlpiPlugin\Etn\Cron', 'SendTopRequestersETN', HOUR_TIMESTAMP,
+                           ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
+   }
+   if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'CheckInactionTimeTicketETN')) {
+      \CronTask::Register('GlpiPlugin\Etn\Cron', 'CheckInactionTimeTicketETN', HOUR_TIMESTAMP,
                            ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
    }
 
@@ -112,4 +123,15 @@ function plugin_etn_uninstall() {
    //if(!$DB->runFile(GLPI_ROOT . "/plugins/etn/sql/uninstall.sql")) die("SQL error");
 
    return true;
+}
+
+function plugin_etn_hook_post_item_form(array $params) {
+   $item = $params['item'];
+
+   if (in_array($item->getType(), ['User', 'Ticket', 'Preference'])) {
+      User::showUsernameField($params);
+   }
+   if ($item->getType() == 'ITILCategory') {
+      InactionTime::showTimeField($item);
+   }
 }

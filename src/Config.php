@@ -266,6 +266,58 @@ class Config extends \CommonDBTM
             </script>';
         echo '</td>';
         echo '</tr>';
+        echo '<tr class="tab_bg_1"><th colspan="4">'.__('Настройки сбора статистики по заявкам', 'etn') . '</th></tr>';
+        echo '<tr>';
+        echo '<td>';
+        echo __('Топ инициаторов за месяц', 'etn');
+        echo '</td>';
+        echo '<td>';
+        \Html::showSimpleForm(
+            '/front/crontask.form.php',
+            ['execute' => 'SendTopRequestersETN'],
+            '<i class="fa-fw far fa-envelope"></i><span>'.__('Отправить на почту', 'etn').'</span>'
+        );
+        echo '</td>';
+        echo '</tr>';
+        echo '<tr class="tab_bg_1"><th colspan="4">'.__('Настройки времени бездействия', 'etn') . '</th></tr>';
+        echo '<tr>';
+        echo '<td>';
+        echo __('Максимальное время бездействия по умолчанию', 'etn');
+        echo '</td>';
+        echo '<td>';
+        \Dropdown::showTimeStamp('inaction_time', [
+            'min'   => 0,
+            'max'   => 7 * DAY_TIMESTAMP,
+            'step'  => $CFG_GLPI['time_step'] * MINUTE_TIMESTAMP * 6,
+            'value' => isset($config['inaction_time']) ? $config['inaction_time'] : '',
+        ]);
+        echo '</td>';
+        echo '</tr>';
+        echo '<tr>';
+        echo '<td>';
+        echo __('Час, когда отправляется автоматический отчет на почту', 'etn');
+        echo '</td>';
+        echo '<td>';
+        \Dropdown::showHours('inaction_send_hour', [
+            /*'min'   => 0,
+            'max'   => 7 * DAY_TIMESTAMP,*/
+            'step'  => $CFG_GLPI['time_step'] * 12,
+            'value' => isset($config['inaction_send_hour']) ? $config['inaction_send_hour'] : '',
+        ]);
+        echo '</td>';
+        echo '</tr>';
+        echo '<tr>';
+        echo '<td>';
+        echo __('Отчет о нарушении времени бездействия по заявкам', 'etn');
+        echo '</td>';
+        echo '<td>';
+        \Html::showSimpleForm(
+            '/front/crontask.form.php',
+            ['execute' => 'CheckInactionTimeTicketETN'],
+            '<i class="fa-fw far fa-envelope"></i><span>'.__('Отправить на почту', 'etn').'</span>'
+        );
+        echo '</td>';
+        echo '</tr>';
         echo '</table>';
 
         $options['candel'] = false;

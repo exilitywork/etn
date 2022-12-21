@@ -77,6 +77,14 @@ CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_openticketsinfos`
 
 CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_toprequesters`
 (
-    `id` INT UNSIGNED NOT NULL,
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+
+CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_inactiontimes`
+(
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `categories_id` INT UNSIGNED NOT NULL,
+    `inaction_time` INT UNSIGNED NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;

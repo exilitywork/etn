@@ -28,7 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
-define('PLUGIN_ETN_VERSION', '0.9.2');
+define('PLUGIN_ETN_VERSION', '0.9.8');
 
 // Minimal GLPI version, inclusive
 define("PLUGIN_ETN_MIN_GLPI_VERSION", "10.0.1");
@@ -61,12 +61,12 @@ function plugin_init_etn()
     if(isset($_SESSION['glpiactiveprofile']) && Config::getOption('rating_profile') == $_SESSION['glpiactiveprofile']['id']) $menu['helpdesk']  = 'GlpiPlugin\Etn\Rating';
     if(\Session::haveRight('config', READ)) $menu['config'] = 'GlpiPlugin\Etn\Config';
     $PLUGIN_HOOKS['menu_toadd']['etn'] = $menu;
-
     $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['etn'] = ['User' => ['GlpiPlugin\Etn\User', 'updateUser']];
+    $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['etn'] = ['ITILCategory' => ['GlpiPlugin\Etn\InactionTime', 'updateITILCategory']];
     $PLUGIN_HOOKS[Hooks::PRE_ITEM_ADD]['etn'] = ['ITILFollowup' => ['GlpiPlugin\Etn\Followup', 'addFollowup']];
     $PLUGIN_HOOKS[Hooks::ITEM_GET_DATA]['etn'] = ['NotificationTargetTicket' => ['GlpiPlugin\Etn\Process', 'modifyNotification']];
-    $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['etn'] = ['GlpiPlugin\Etn\User', 'showUsernameField'];
     $PLUGIN_HOOKS[Hooks::POST_SHOW_TAB]['etn'] = ['GlpiPlugin\Etn\User', 'showUsernameField'];
+    $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['etn'] = 'plugin_etn_hook_post_item_form';
     $CFG_GLPI["notificationtemplates_types"][] = TopRequesters::class;
 }
 

@@ -54,8 +54,12 @@ class Cron extends \CommonDBTM
                 return array('description' => __('Отправка уведомлений в Telegram', 'etn'));
             case 'ListenMessageTelegramETN':
                 return array('description' => __('Обработка новых сообщений в Telegram', 'etn'));
-            case 'SlaCalcETN':
-                return array('description' => __('Расчет статистики SLA заявок', 'etn'));
+            case 'TicketStatCalculationETN':
+                return array('description' => __('Расчет статистики по заявкам для Grafana', 'etn'));
+            case 'SendTopRequestersETN':
+                return array('description' => __('Отправка списка ТОП инициаторов по завкам за месяц', 'etn'));
+            case 'CheckInactionTimeTicketETN':
+                return array('description' => __('Проверка времени бездействия по заявкам', 'etn'));
         }
   
         return array();
@@ -190,7 +194,7 @@ class Cron extends \CommonDBTM
     static function cronSendTopRequestersETN($task) {
         global $DB;
 
-        if(date('Y-m-d H') != gmdate('Y-m-d', strtotime('last sat of')).' 10') {
+        if(\Session::isCron() && date('Y-m-d H') != gmdate('Y-m-d', strtotime('last sat of')).' 10') {
             return true;
         }
         
@@ -237,6 +241,104 @@ class Cron extends \CommonDBTM
                     'toprequesters' => $top
                 ];
                 if(\NotificationEvent::raiseEvent('top_requesters', new TopRequesters(), $params)) {
+                    $task->addVolume($cnt);
+                    $task->log("Action successfully completed");
+                    return true;
+                }
+            }
+        } catch (Exception $e) {
+            $e->getMessage();
+            print_r($e->getMessage());
+            $task->log($e->getMessage());
+            return false;
+        }
+        return false;
+    }
+
+    static function cronCheckInactionTimeTicketETN($task) {
+        global $DB;
+
+        $config = Config::getConfig();
+
+        if(\Session::isCron() && date('H') != explode(':', $config['inaction_send_hour'])[0]) {
+            return true;
+        }
+        
+        try {
+            $expired = [];
+            $iterator = $DB->request([
+                'SELECT'    => [
+                    'glpi_tickets.id AS id',
+                    'glpi_tickets.name AS name'
+                ],
+                'FROM'      => 'glpi_tickets',
+                'WHERE'     => [
+                    'glpi_tickets.is_deleted'   => 0,
+                    'glpi_tickets.status'       => ['<', 5]
+                ],
+                'ORDERBY'   => 'id'
+            ]);
+            foreach($iterator as $id => $row) {
+                if(InactionTime::checkExpiredInactionTime($row['id'])) {
+                    $row['requesters'] = '';
+                    $row['specs'] = '';
+                    $req = $DB->request([
+                        'SELECT'    => [
+                            'glpi_users.realname AS realname',
+                            'glpi_users.firstname AS firstname'
+                        ],
+                        'FROM'      => 'glpi_users',
+                        'LEFT JOIN' => [
+                            'glpi_tickets_users' => [
+                                'FKEY' => [
+                                    'glpi_users' => 'id',
+                                    'glpi_tickets_users' => 'users_id',
+                                ]
+                            ],
+                        ],
+                        'WHERE'     => [
+                            'glpi_users.is_active'          => 1,
+                            'glpi_tickets_users.type'       => 1,
+                            'glpi_tickets_users.tickets_id' => $row['id']
+                        ]
+                    ]);
+                    foreach($req as $user) {
+                        if($row['requesters']) $row['requesters'] .= '<br>';
+                        $row['requesters'] .= $user['realname'].' '.$user['firstname'];
+                    }
+                    $spec = $DB->request([
+                        'SELECT'    => [
+                            'glpi_users.realname AS realname',
+                            'glpi_users.firstname AS firstname'
+                        ],
+                        'FROM'      => 'glpi_users',
+                        'LEFT JOIN' => [
+                            'glpi_tickets_users' => [
+                                'FKEY' => [
+                                    'glpi_users' => 'id',
+                                    'glpi_tickets_users' => 'users_id',
+                                ]
+                            ],
+                        ],
+                        'WHERE'     => [
+                            'glpi_users.is_active'          => 1,
+                            'glpi_tickets_users.type'       => 2,
+                            'glpi_tickets_users.tickets_id' => $row['id']
+                        ]
+                    ]);
+                    foreach($spec as $user) {
+                        if($row['specs']) $row['specs'] .= '<br>';
+                        $row['specs'] .= $user['realname'].' '.$user['firstname'];
+                    }
+                    array_push($expired, $row);
+                }
+            }
+            if ($cnt = count($expired)) {
+                $params =  [
+                    'entities_id'  => 0,
+                    'inactiontime' => $expired
+                ];
+                if(\NotificationEvent::raiseEvent('inaction_time', new InactionTime(), $params)) {
                     $task->addVolume($cnt);
                     $task->log("Action successfully completed");
                     return true;

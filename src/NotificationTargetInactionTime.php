@@ -34,16 +34,16 @@ if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access directly to this file");
 }
 
-class NotificationTargetTopRequesters extends \NotificationTarget {
+class NotificationTargetInactionTime extends \NotificationTarget {
 
-    const TOP_REQUESTERS  = 'top_requesters';
+    const INACTION_TIME  = 'inaction_time';
 
     /**
      * @return array
      */
     function getEvents() {
         return [
-            self::TOP_REQUESTERS  => 'Топ инициаторов по заявкам'
+            self::INACTION_TIME  => 'Отчет о нарушении времени бездействия по заявкам'
         ];
     }
 
@@ -54,14 +54,17 @@ class NotificationTargetTopRequesters extends \NotificationTarget {
     function addDataForTemplate($event, $options = []) {
         global $CFG_GLPI;
 
-        $this->data['##toprequesters.entity##'] = \Dropdown::getDropdownName('glpi_entities', $options['entities_id']);
+        $this->data['##inactiontime.entity##'] = \Dropdown::getDropdownName('glpi_entities', $options['entities_id']);
 
-        foreach ($options['toprequesters'] as $id => $item) {
+        foreach ($options['inactiontime'] as $id => $item) {
             $tmp = [];
-            $tmp['##toprequesters.cnt##']       = $item['cnt'];
-            $tmp['##toprequesters.requester##'] = $item['requester'];
-            $tmp['##toprequesters.number##']    = $item['number'];
-            $this->data['toprequesters'][] = $tmp;
+            $tmp['##inactiontime.name##']       = $item['name'];
+            $tmp['##inactiontime.requesters##'] = $item['requesters'];
+            $tmp['##inactiontime.specs##']      = $item['specs'];
+            $url                                = urldecode($CFG_GLPI['url_base'].'/front/ticket.form.php?id='.$item['id']);
+            $tmp['##inactiontime.id##']        = '<a href="'.$url.'" title="'.$item['name'].'">'.$item['id'].'</a>';
+            
+            $this->data['inactiontime'][] = $tmp;
         }
         $this->getTags();
         foreach ($this->tag_descriptions[\NotificationTarget::TAG_LANGUAGE] as $tag => $values) {
@@ -75,25 +78,12 @@ class NotificationTargetTopRequesters extends \NotificationTarget {
      *
     */
     function getTags() {
-        $month = [
-            'январь',
-            'февраль',
-            'март',
-            'апрель',
-            'май',
-            'июнь',
-            'июль',
-            'август',
-            'сентябрь',
-            'октябрь',
-            'ноябрь',
-            'декабрь'
-        ];
         $tags = [
-            'toprequesters.requester'   => __('Requester'),
-            'toprequesters.cnt'         => __('Tickets'),
-            'toprequesters.number'      => '№',
-            'toprequesters.action'      => 'Топ инициаторов по заявкам за '.$month[date('n')-1].' '.date('Y')
+            'inactiontime.id'           => __('ID (URL)', 'etn'),
+            'inactiontime.name'         => __('Title'),
+            'inactiontime.requesters'   => __('Инициаторы', 'etn'),
+            'inactiontime.specs'        => __('Специалисты', 'etn'),
+            'inactiontime.action'       => 'Отчет о нарушении времени бездействия по заявкам за '.date('d-m-Y H:i')
         ];
 
         foreach ($tags as $tag => $label) {
@@ -113,15 +103,15 @@ class NotificationTargetTopRequesters extends \NotificationTarget {
                 'SELECT'    => 'id',
                 'FROM'      => 'glpi_notificationtemplates',
                 'WHERE'     => [
-                    'itemtype' => 'GlpiPlugin\Etn\TopRequesters'
+                    'itemtype' => 'GlpiPlugin\Etn\InactionTime'
                 ]
             ]);
 
             if (!count($req)) {
                 $DB->insertOrDie(
                     'glpi_notificationtemplates', [
-                        'name'           => 'Топ инициаторов по заявкам',
-                        'itemtype'       => 'GlpiPlugin\Etn\TopRequesters',
+                        'name'           => 'Отчет о нарушении времени бездействия по заявкам',
+                        'itemtype'       => 'GlpiPlugin\Etn\InactionTime',
                         'date_mod'       => date('Y-m-d H:i:s'),
                         'date_creation'  => date('Y-m-d H:i:s')
                     ]
@@ -129,27 +119,29 @@ class NotificationTargetTopRequesters extends \NotificationTarget {
                 $templates_id = $DB->insertId();
                 $DB->insertOrDie(
                     'glpi_notificationtemplatetranslations', [
-                        'notificationtemplates_id'   => $templates_id,
-                        'language'                   => '',
-                        'subject'                    => '##lang.toprequesters.action##',
+                        'notificationtemplates_id'  => $templates_id,
+                        'language'                  => '',
+                        'subject'                   => '##lang.inactiontime.action##',
                         'content_html'              => 
-                            "&lt;p&gt;##lang.toprequesters.action##&lt;table style=\"border-collapse: collapse;\"&gt;&lt;tr&gt;".
-                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.toprequesters.number##&lt;/th&gt;".
-                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.toprequesters.requester##&lt;/th&gt;".
-                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.toprequesters.cnt##&lt;/th&gt;&lt;/tr&gt;".
-                            "##FOREACHtoprequesters##&lt;tr&gt;".
-                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##toprequesters.number##&lt;/td&gt;".
-                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##toprequesters.requester##&lt;/td&gt;".
-                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##toprequesters.cnt##&lt;/td&gt;&lt;/tr&gt;".
-                            "##ENDFOREACHtoprequesters##&lt;/table&gt;&lt;/p&gt;",
+                            "&lt;p&gt;##lang.inactiontime.action##&lt;table style=\"border-collapse: collapse;\"&gt;&lt;tr&gt;".
+                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.inactiontime.id##&lt;/th&gt;".
+                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.inactiontime.name##&lt;/th&gt;".
+                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.inactiontime.requesters##&lt;/th&gt;".
+                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.inactiontime.specs##&lt;/th&gt;&lt;/tr&gt;".
+                            "##FOREACHinactiontime##&lt;tr&gt;".
+                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##inactiontime.id##&lt;/td&gt;".
+                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##inactiontime.name##&lt;/td&gt;".
+                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##inactiontime.requesters##&lt;/td&gt;".
+                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##inactiontime.specs##&lt;/td&gt;&lt;/tr&gt;".
+                            "##ENDFOREACHinactiontime##&lt;/table&gt;&lt;/p&gt;",
                     ]
                 );
                 $DB->insertOrDie(
                     'glpi_notifications', [
-                        'name'          => 'Топ инициаторов по заявкам',
-                        'itemtype'      => 'GlpiPlugin\Etn\TopRequesters',
+                        'name'          => 'Отчет о нарушении времени бездействия по заявкам',
+                        'itemtype'      => 'GlpiPlugin\Etn\InactionTime',
                         'entities_id'   => 0,
-                        'event'         => 'top_requesters',
+                        'event'         => 'inaction_time',
                         'is_recursive'  => 1,
                         'is_active'     => 1
                     ]
