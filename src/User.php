@@ -93,7 +93,7 @@ class User extends \CommonDBTM
 
                 $out = '<table class="tab_cadre_fixe" style="width: auto;">';
                 $out .= '<tr class="tab_bg_1" style="border: 2px rgb(135, 170, 138) solid; border-radius: 4px; display: block;">';
-                $out .= '<td>'.__('Telegram username').'</td>';
+                $out .= '<td>'.__('Имя пользователя Telegram', 'etn').'</td>';
                 $out .= '<td><input id="username" type="text" name="username" value="'.$username.'"></td>';
                 if($isPref) $out .= '<td><a id="save-username" class="btn btn-primary me-2" name="ave-username" value="1" onclick="saveUsername()">Сохранить</a></td>
                     <script>
