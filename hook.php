@@ -120,7 +120,7 @@ function plugin_etn_install() {
 function plugin_etn_uninstall() {
    global $DB;
 
-   //if(!$DB->runFile(GLPI_ROOT . "/plugins/etn/sql/uninstall.sql")) die("SQL error");
+   //if(!$DB->runFile(GLPI_ROOT . "/plugins/etn/sql/uninstall.sql")) die("SQL error");  
 
    return true;
 }

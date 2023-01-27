@@ -29,6 +29,7 @@
  */
 use Glpi\Application\View\TemplateRenderer;
 use GlpiPlugin\Etn\Config;
+use GlpiPlugin\Etn\InactionTime_Group_User;
 
 global $CFG_GLPI, $DB;
 
@@ -43,12 +44,26 @@ if(Session::getLoginUserID()) {
         Html::header(Config::getTypeName(1), $_SERVER['PHP_SELF'], 'config', 'GlpiPlugin\Etn\Config');
     }
 }
-if(!empty($_POST)) {
+if(!empty($_POST) && isset($_POST['update'])) {
     if(isset($_POST['entities_id'])) unset($_POST['entities_id']);
     if(isset($_POST['update'])) unset($_POST['update']);
     if(isset($_POST['id'])) unset($_POST['id']);
     if(isset($_POST['_glpi_csrf_token'])) unset($_POST['_glpi_csrf_token']);
     Config::updateConfig($_POST);
+}
+
+if(!empty($_POST) && isset($_POST['add'])) {
+    $itgu = new InactionTime_Group_User;
+    $itgu->fields['groups_id'] = $_POST['groups_id'];
+    $itgu->fields['users_id'] = $_POST['users_id'];
+    if(!(current($itgu->find(['groups_id' => $_POST['groups_id'], 'users_id' => $_POST['users_id']], [], 1)))) {
+        $itgu->addToDB();
+    }
+}
+
+if(!empty($_REQUEST) && isset($_REQUEST['delete'])) {
+    $itgu = new InactionTime_Group_User;
+    $itgu->deleteByCriteria(['id' => $_REQUEST['delete']]);
 }
 
 $config = new Config();

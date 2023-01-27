@@ -35,6 +35,8 @@ if (!defined('GLPI_ROOT')) {
 }
 
 class InactionTime extends \CommonDBTM {
+
+    public $deduplicate_queued_notifications = false;
     
     /**
      * Show additional field of inaction time for category
@@ -113,7 +115,6 @@ class InactionTime extends \CommonDBTM {
             $inactionTime = $config['inaction_time'];
         }
         $deadline = date('Y-m-d H:i:s', strtotime('-'.$inactionTime.' seconds'));
-        print_r($deadline.' -- ');
         $count = count($DB->request([
             'SELECT' => 'id', 
             'FROM' => 'glpi_itilfollowups',
@@ -157,5 +158,26 @@ class InactionTime extends \CommonDBTM {
         ]));
         if ($count) return false;
         return true;
+    }
+
+    static function addRecipient($item) {
+        
+        unset($item->target);
+
+        $recipients = $item->options['recipients'];
+
+        foreach($recipients as $id) {
+            $email = current((new \UserEmail)->find(['users_id' => $id, 'is_default' => 1], [], 1))['email'];
+            $user = current((new \User)->find(['id' => $id], [], 1));
+
+            if ($item->getType() == 'GlpiPlugin\Etn\NotificationTargetInactionTime') {
+                $item->target[$email]['language'] = 'ru_RU';
+                $item->target[$email]['additionnaloption']['usertype'] = 2;
+                $item->target[$email]['username'] = $user['realname'].' '.$user['firstname'];
+                $item->target[$email]['users_id'] = $id;
+                $item->target[$email]['email'] = $email;
+            }
+        }
+        //error_log(date('Y-m-d H:i:s')."TEST\n", 3, '/var/www/glpi/files/_log/test.log');
     }
 }

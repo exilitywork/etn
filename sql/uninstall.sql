@@ -8,3 +8,4 @@ DROP TABLE `glpi_plugin_etn_slainfos`;
 DROP TABLE `glpi_plugin_etn_openticketsinfos`;
 DROP TABLE `glpi_plugin_etn_toprequesters`;
 DROP TABLE `glpi_plugin_etn_inactiontimes`;
+DROP TABLE `glpi_plugin_etn_inactiontimes_groups_users`;

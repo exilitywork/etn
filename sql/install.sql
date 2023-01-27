@@ -88,3 +88,11 @@ CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_inactiontimes`
     `inaction_time` INT UNSIGNED NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+
+CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_inactiontimes_groups_users`
+(
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `groups_id` INT UNSIGNED NOT NULL,
+    `users_id` INT UNSIGNED NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;

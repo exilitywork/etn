@@ -147,17 +147,6 @@ class Config extends \CommonDBTM
         ]);
         echo '</td>';
         echo '</tr>';
-        /*echo '<tr class="tab_bg_1">';
-        echo '<td>';
-        echo __('Профиль для Telegram уведомлений', 'etn');
-        echo '</td>';
-        echo '<td class="center">';
-        \Profile::dropdownUnder([
-            'name'  => 'notification_profile',
-            'value' => isset($config['notification_profile']) ? $config['notification_profile'] : \Profile::getDefault()
-        ]);
-        echo '</td>';
-        echo '</tr>';*/
         echo '<tr class="tab_bg_1">';
         echo '<td>';
         echo __('Профиль для доступа к статистике по оценкам', 'etn');
@@ -299,8 +288,6 @@ class Config extends \CommonDBTM
         echo '</td>';
         echo '<td>';
         \Dropdown::showHours('inaction_send_hour', [
-            /*'min'   => 0,
-            'max'   => 7 * DAY_TIMESTAMP,*/
             'step'  => $CFG_GLPI['time_step'] * 12,
             'value' => isset($config['inaction_send_hour']) ? $config['inaction_send_hour'] : '',
         ]);
@@ -322,6 +309,58 @@ class Config extends \CommonDBTM
 
         $options['candel'] = false;
         $this->showFormButtons($options);
+
+        $rand = mt_rand();
+
+        echo "<div class='firstbloc'>";
+        echo "<form name='inaction_group_user_form$rand' id='inaction_group_user_form$rand' method='post' action='/plugins/etn/front/config.php'>";
+        echo "<table class='tab_cadre_fixe'>";
+        echo "<tr class='tab_bg_1'><th colspan='6'>" . __('Управление адресатами уведомлений по бездействию') . "</tr>";
+
+        echo "<tr class='tab_bg_2'><td class='center'>";
+        echo __('Group')."</td><td>";
+        \Group::dropdown();
+        echo "</td><td class='center'>".__('User')."</td><td>";
+        \User::dropdown(['right'  => "all",
+            'entity' => 0,
+            'with_no_right' => true
+        ]);
+        echo "</td><td class='center'>";
+        echo "<input type='submit' name='add' value=\"" . _sx('button', 'Add') . "\" class='btn btn-primary'>";
+        echo "</td></tr>";
+
+        echo "</table>";
+        \Html::closeForm();
+        echo "</div>";
+
+        $iterator = (new InactionTime_Group_User)->find();
+        $num = count($iterator);
+
+        echo "<div class='spaced'>";
+        echo "<form name='inaction_group_user_table$rand' id='inaction_group_user_table$rand' method='post' action=''>";
+        if ($num > 0) {
+            echo "<table class='tab_cadre_fixehov'>";
+            $header = "<tr><th>".__('Group')."</th><th>".__('User')."</th></tr>";
+            echo $header;
+            foreach ($iterator as $data) {
+                $group = current((new \Group)->find(['id' => $data["groups_id"]], [], 1))['name'];
+                $user = current((new \User)->find(['id' => $data["users_id"]], [], 1));
+                echo "<tr class='tab_bg_1'>";
+                echo "<td>".$group."</td>";
+                echo "<td>".$user['realname'].' '.$user['firstname']."</td>";
+                echo '<td><a class="btn btn-sm btn-danger" href="?delete='.$data['id'].'"><span>Удалить</span></a></td>';
+                echo "</tr>";
+            }
+            echo $header;
+            echo "</table>";
+        } else {
+            echo "<table class='tab_cadre_fixe'>";
+            echo "<tr><th>" . __('No item found') . "</th></tr>";
+            echo "</table>\n";
+        }
+
+        \Html::closeForm();
+        echo "</div>";
 
         return true;
     }
@@ -402,7 +441,7 @@ class Config extends \CommonDBTM
     }
 
     function can($ID, $right, ?array &$input = NULL) {
-        if(\Session::haveRight('config', READ)) return true; 
+        if(\Session::haveRight('config', READ)) return true;
         return false;
     }
 }

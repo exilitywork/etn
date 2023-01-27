@@ -263,87 +263,124 @@ class Cron extends \CommonDBTM
         if(\Session::isCron() && date('H') != explode(':', $config['inaction_send_hour'])[0]) {
             return true;
         }
-        
+
+        $allCnt = 0;
+        $groups = InactionTime_Group_User::getGroups();
         try {
-            $expired = [];
-            $iterator = $DB->request([
-                'SELECT'    => [
-                    'glpi_tickets.id AS id',
-                    'glpi_tickets.name AS name'
-                ],
-                'FROM'      => 'glpi_tickets',
-                'WHERE'     => [
-                    'glpi_tickets.is_deleted'   => 0,
-                    'glpi_tickets.status'       => ['<', 5]
-                ],
-                'ORDERBY'   => 'id'
-            ]);
-            foreach($iterator as $id => $row) {
-                if(InactionTime::checkExpiredInactionTime($row['id'])) {
-                    $row['requesters'] = '';
-                    $row['specs'] = '';
-                    $req = $DB->request([
-                        'SELECT'    => [
-                            'glpi_users.realname AS realname',
-                            'glpi_users.firstname AS firstname'
+            foreach($groups as $group) {
+                //error_log(date('Y-m-d H:i:s')."---------------------------".$group."\n", 3, '/var/www/glpi/files/_log/test.log');
+                $expired = [];
+                $iterator = $DB->request([
+                    'SELECT'    => [
+                        'glpi_tickets.id AS id',
+                        'glpi_tickets.name AS name'
+                    ],
+                    'DISTINCT' => true,
+                    'FROM'      => 'glpi_tickets',
+                    'LEFT JOIN' => [
+                        'glpi_tickets_users' => [
+                            'FKEY' => [
+                                'glpi_tickets'          => 'id',
+                                'glpi_tickets_users'    => 'tickets_id'
+                            ]
                         ],
-                        'FROM'      => 'glpi_users',
-                        'LEFT JOIN' => [
-                            'glpi_tickets_users' => [
-                                'FKEY' => [
-                                    'glpi_users' => 'id',
-                                    'glpi_tickets_users' => 'users_id',
-                                ]
+                        'glpi_users' => [
+                            'FKEY' => [
+                                'glpi_users'            => 'id',
+                                'glpi_tickets_users'    => 'users_id',
+                            ]
+                        ],
+                        'glpi_groups_users' => [
+                            'FKEY' => [
+                                'glpi_tickets_users'    => 'users_id',
+                                'glpi_groups_users'     => 'users_id',
+                            ]
+                        ],
+                    ],
+                    'WHERE'     => [
+                        'glpi_tickets.is_deleted'       => 0,
+                        'glpi_tickets.status'           => ['<', 5],
+                        'glpi_groups_users.groups_id'   => $group,
+                        'glpi_users.is_active'          => 1,
+                        'glpi_tickets_users.type'       => 2
+                    ],
+                    'ORDERBY'   => 'id'
+                ]);
+
+                foreach($iterator as $id => $row) {
+                    if(InactionTime::checkExpiredInactionTime($row['id'])) {
+                        $row['requesters'] = '';
+                        $row['specs'] = '';
+                        $req = $DB->request([
+                            'SELECT'    => [
+                                'glpi_users.realname AS realname',
+                                'glpi_users.firstname AS firstname'
                             ],
-                        ],
-                        'WHERE'     => [
-                            'glpi_users.is_active'          => 1,
-                            'glpi_tickets_users.type'       => 1,
-                            'glpi_tickets_users.tickets_id' => $row['id']
-                        ]
-                    ]);
-                    foreach($req as $user) {
-                        if($row['requesters']) $row['requesters'] .= '<br>';
-                        $row['requesters'] .= $user['realname'].' '.$user['firstname'];
-                    }
-                    $spec = $DB->request([
-                        'SELECT'    => [
-                            'glpi_users.realname AS realname',
-                            'glpi_users.firstname AS firstname'
-                        ],
-                        'FROM'      => 'glpi_users',
-                        'LEFT JOIN' => [
-                            'glpi_tickets_users' => [
-                                'FKEY' => [
-                                    'glpi_users' => 'id',
-                                    'glpi_tickets_users' => 'users_id',
-                                ]
+                            'FROM'      => 'glpi_users',
+                            'LEFT JOIN' => [
+                                'glpi_tickets_users' => [
+                                    'FKEY' => [
+                                        'glpi_users' => 'id',
+                                        'glpi_tickets_users' => 'users_id',
+                                    ]
+                                ],
                             ],
-                        ],
-                        'WHERE'     => [
-                            'glpi_users.is_active'          => 1,
-                            'glpi_tickets_users.type'       => 2,
-                            'glpi_tickets_users.tickets_id' => $row['id']
-                        ]
-                    ]);
-                    foreach($spec as $user) {
-                        if($row['specs']) $row['specs'] .= '<br>';
-                        $row['specs'] .= $user['realname'].' '.$user['firstname'];
+                            'WHERE'     => [
+                                'glpi_users.is_active'          => 1,
+                                'glpi_tickets_users.type'       => 1,
+                                'glpi_tickets_users.tickets_id' => $row['id']
+                            ]
+                        ]);
+                        foreach($req as $user) {
+                            if($row['requesters']) $row['requesters'] .= '<br>';
+                            $row['requesters'] .= $user['realname'].' '.$user['firstname'];
+                        }
+                        $spec = $DB->request([
+                            'SELECT'    => [
+                                'glpi_users.realname AS realname',
+                                'glpi_users.firstname AS firstname'
+                            ],
+                            'FROM'      => 'glpi_users',
+                            'LEFT JOIN' => [
+                                'glpi_tickets_users' => [
+                                    'FKEY' => [
+                                        'glpi_users' => 'id',
+                                        'glpi_tickets_users' => 'users_id',
+                                    ]
+                                ],
+                            ],
+                            'WHERE'     => [
+                                'glpi_users.is_active'          => 1,
+                                'glpi_tickets_users.type'       => 2,
+                                'glpi_tickets_users.tickets_id' => $row['id']
+                            ]
+                        ]);
+                        foreach($spec as $user) {
+                            if($row['specs']) $row['specs'] .= '<br>';
+                            $row['specs'] .= $user['realname'].' '.$user['firstname'];
+                        }
+                        array_push($expired, $row);
                     }
-                    array_push($expired, $row);
+                }
+                //error_log(date('Y-m-d H:i:s')." Группа: ".$group." expired: ".count($iterator)."\n", 3, '/var/www/glpi/files/_log/test.log');
+                if ($cnt = count($expired)) {
+                    $groupname = current((new \Group)->find(['id' => $group], [], 1))['name'];
+                    $recipients = InactionTime_Group_User::getUsersForGroup($group);
+                    $params =  [
+                        'entities_id'  => 0,
+                        'inactiontime' => $expired,
+                        'recipients' => $recipients,
+                        'groupname' => $groupname,
+                        'items_id' => $recipient
+                    ];
+                    if(\NotificationEvent::raiseEvent('inaction_time', new InactionTime(), $params)) {
+                        $allCnt += $cnt;
+                    }
                 }
             }
-            if ($cnt = count($expired)) {
-                $params =  [
-                    'entities_id'  => 0,
-                    'inactiontime' => $expired
-                ];
-                if(\NotificationEvent::raiseEvent('inaction_time', new InactionTime(), $params)) {
-                    $task->addVolume($cnt);
-                    $task->log("Action successfully completed");
-                    return true;
-                }
-            }
+            $task->addVolume($allCnt);
+            $task->log("Action successfully completed");
+            return true;
         } catch (Exception $e) {
             $e->getMessage();
             print_r($e->getMessage());

@@ -39,6 +39,16 @@ class NotificationTargetInactionTime extends \NotificationTarget {
     const INACTION_TIME  = 'inaction_time';
 
     /**
+     * Overwrite the function in NotificationTarget because there's only one target to be notified
+     *
+     * @see NotificationTarget::addNotificationTargets()
+     */
+    public function addNotificationTargets($entity)
+    {
+        $this->addTarget(\Notification::GLOBAL_ADMINISTRATOR, __('Руководитель группы (из настроек плагина ETN)'));
+    }
+
+    /**
      * @return array
      */
     function getEvents() {
@@ -83,7 +93,7 @@ class NotificationTargetInactionTime extends \NotificationTarget {
             'inactiontime.name'         => __('Title'),
             'inactiontime.requesters'   => __('Инициаторы', 'etn'),
             'inactiontime.specs'        => __('Специалисты', 'etn'),
-            'inactiontime.action'       => 'Отчет о нарушении времени бездействия по заявкам за '.date('d-m-Y H:i')
+            'inactiontime.action'       => 'Отчет о нарушении времени бездействия по заявкам группы '.$this->options['groupname'].' за '.date('d-m-Y H:i')
         ];
 
         foreach ($tags as $tag => $label) {
