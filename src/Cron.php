@@ -273,7 +273,8 @@ class Cron extends \CommonDBTM
                 $iterator = $DB->request([
                     'SELECT'    => [
                         'glpi_tickets.id AS id',
-                        'glpi_tickets.name AS name'
+                        'glpi_tickets.name AS name',
+                        'glpi_tickets.date AS date'
                     ],
                     'DISTINCT' => true,
                     'FROM'      => 'glpi_tickets',

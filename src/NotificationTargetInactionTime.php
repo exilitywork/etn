@@ -69,6 +69,7 @@ class NotificationTargetInactionTime extends \NotificationTarget {
         foreach ($options['inactiontime'] as $id => $item) {
             $tmp = [];
             $tmp['##inactiontime.name##']       = $item['name'];
+            $tmp['##inactiontime.date##']       = $item['date'];
             $tmp['##inactiontime.requesters##'] = $item['requesters'];
             $tmp['##inactiontime.specs##']      = $item['specs'];
             $url                                = urldecode($CFG_GLPI['url_base'].'/front/ticket.form.php?id='.$item['id']);
@@ -91,6 +92,7 @@ class NotificationTargetInactionTime extends \NotificationTarget {
         $tags = [
             'inactiontime.id'           => __('ID (URL)', 'etn'),
             'inactiontime.name'         => __('Title'),
+            'inactiontime.date'         => __('Opening date'),
             'inactiontime.requesters'   => __('Инициаторы', 'etn'),
             'inactiontime.specs'        => __('Специалисты', 'etn'),
             'inactiontime.action'       => 'Отчет о нарушении времени бездействия по заявкам группы '.$this->options['groupname'].' за '.date('d-m-Y H:i')
@@ -136,11 +138,13 @@ class NotificationTargetInactionTime extends \NotificationTarget {
                             "&lt;p&gt;##lang.inactiontime.action##&lt;table style=\"border-collapse: collapse;\"&gt;&lt;tr&gt;".
                             "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.inactiontime.id##&lt;/th&gt;".
                             "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.inactiontime.name##&lt;/th&gt;".
+                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.inactiontime.date##&lt;/th&gt;".
                             "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.inactiontime.requesters##&lt;/th&gt;".
                             "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.inactiontime.specs##&lt;/th&gt;&lt;/tr&gt;".
                             "##FOREACHinactiontime##&lt;tr&gt;".
                             "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##inactiontime.id##&lt;/td&gt;".
                             "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##inactiontime.name##&lt;/td&gt;".
+                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##inactiontime.date##&lt;/td&gt;".
                             "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##inactiontime.requesters##&lt;/td&gt;".
                             "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##inactiontime.specs##&lt;/td&gt;&lt;/tr&gt;".
                             "##ENDFOREACHinactiontime##&lt;/table&gt;&lt;/p&gt;",
