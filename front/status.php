@@ -116,7 +116,12 @@ if(isset($_REQUEST['tickets_id']) && isset($_REQUEST['users_id'])){
                 $t->fields['impact'] = $_REQUEST['priority_up'];
                 $t->updateInDB(array_keys($t->fields));
                 $successPriority = true;
-                Telegram::sendPriorityUpMessage($_REQUEST['tickets_id']);
+                try {
+                    Telegram::sendPriorityUpMessage($_REQUEST['tickets_id']);
+                } catch (\TelegramBot\Api\Exception $e) {
+                    //$e->getMessage();
+                    error_log($e, 3, GLPI_LOG_DIR.'/telegram_etn.log');
+                } 
 
                 $notification = new \Notification();
                 $n = current($notification->find(['itemtype' => 'Ticket', 'event' => 'update', 'is_active' => 0], [], 1));

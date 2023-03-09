@@ -90,6 +90,7 @@ class Telegram extends \CommonDBTM
             $bot->sendMessage(Config::getOption('group_chat_id'), $message);
         } catch (Exception $e) {
             $e->getMessage();
+            error_log($e, 3, GLPI_LOG_DIR.'/telegram_etn.log');
             return false;
         }
         return true;
@@ -123,6 +124,7 @@ class Telegram extends \CommonDBTM
             }
         } catch (Exception $e) {
             $e->getMessage();
+            error_log($e, 3, GLPI_LOG_DIR.'/telegram_etn.log');
             return false;
         }
         return true;
@@ -140,6 +142,7 @@ class Telegram extends \CommonDBTM
             return $bot->getMe()->getUsername();
         } catch (\TelegramBot\Api\Exception $e) {
             $e->getMessage();
+            error_log($e, 3, GLPI_LOG_DIR.'/telegram_etn.log');
             return false;
         }
     }
