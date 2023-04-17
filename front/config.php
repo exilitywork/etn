@@ -29,6 +29,7 @@
  */
 use Glpi\Application\View\TemplateRenderer;
 use GlpiPlugin\Etn\Config;
+use GlpiPlugin\Etn\ExpiredSla;
 use GlpiPlugin\Etn\InactionTime_Group_User;
 
 global $CFG_GLPI, $DB;
@@ -52,6 +53,7 @@ if(!empty($_POST) && isset($_POST['update'])) {
     Config::updateConfig($_POST);
 }
 
+// add or delete users for InactionTime notify
 if(!empty($_POST) && isset($_POST['add'])) {
     $itgu = new InactionTime_Group_User;
     $itgu->fields['groups_id'] = $_POST['groups_id'];
@@ -60,10 +62,22 @@ if(!empty($_POST) && isset($_POST['add'])) {
         $itgu->addToDB();
     }
 }
-
 if(!empty($_REQUEST) && isset($_REQUEST['delete'])) {
     $itgu = new InactionTime_Group_User;
     $itgu->deleteByCriteria(['id' => $_REQUEST['delete']]);
+}
+
+// add or delete users for SLA notify
+if(!empty($_POST) && isset($_POST['add_sla_user'])) {
+    $expiredSlaUser = new ExpiredSla;
+    $expiredSlaUser->fields['users_id'] = $_POST['users_id'];
+    if(!(current($expiredSlaUser->find(['users_id' => $_POST['users_id']], [], 1)))) {
+        $expiredSlaUser->addToDB();
+    }
+}
+if(!empty($_REQUEST) && isset($_REQUEST['delete_sla_user'])) {
+    $itgu = new ExpiredSla;
+    $itgu->deleteByCriteria(['id' => $_REQUEST['delete_sla_user']]);
 }
 
 $config = new Config();

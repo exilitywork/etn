@@ -34,6 +34,7 @@ use GlpiPlugin\Etn\Ldap;
 use GlpiPlugin\Etn\User;
 use GlpiPlugin\Etn\NotificationTargetTopRequesters;
 use GlpiPlugin\Etn\NotificationTargetInactionTime;
+use GlpiPlugin\Etn\NotificationTargetExpiredSla;
 
 /**
  * Plugin install process
@@ -47,6 +48,7 @@ function plugin_etn_install() {
 
    NotificationTargetTopRequesters::init();
    NotificationTargetInactionTime::init();
+   NotificationTargetExpiredSla::init();
 
    $cron = new \CronTask();
    if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'SendMessageTelegeramETN')) {
@@ -67,6 +69,10 @@ function plugin_etn_install() {
    }
    if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'CheckInactionTimeTicketETN')) {
       \CronTask::Register('GlpiPlugin\Etn\Cron', 'CheckInactionTimeTicketETN', HOUR_TIMESTAMP,
+                           ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
+   }
+   if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'ExpiredSlaETN')) {
+      \CronTask::Register('GlpiPlugin\Etn\Cron', 'ExpiredSlaETN', HOUR_TIMESTAMP,
                            ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
    }
 

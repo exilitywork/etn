@@ -99,27 +99,7 @@ class Cron extends \CommonDBTM
             $message = "По заявке ".$ticketURL." получена низкая оценка - ".$rate."\n";
             $message .= $reqTitle.implode(', ', $requesters)."\n";
             $message .= $specTitle.implode(', ', $assigns)."\n";
-            //$bot->sendMessage('383009633', $message);
-            $config = Config::getConfig();
-
-            foreach($bot->getUpdates() as $update){
-                print_r($update);
-                print_r('<br>');
-                print_r('<br>');
-                /*$message = $update->getMessage();
-                $id = $message->getChat()->getId();
-                $username = $message->getChat()->getUsername();
-                Chat::updateChat($username, $id);
-                $bot->sendMessage($id, 'Your message: ' . $message->getText());*/
-            }
-
-            if(isset($update)) {
-                //print_r($update->getUpdateId());
-                //Config::updateConfig(['updateId' => $update->getUpdateId()]);
-            }
-            //print_r(Chat::getChat($username));
-            //die();
-                
+            $config = Config::getConfig();                
         } catch (Exception $e) {
             $e->getMessage();
             print_r($e->getMessage());
@@ -268,7 +248,6 @@ class Cron extends \CommonDBTM
         $groups = InactionTime_Group_User::getGroups();
         try {
             foreach($groups as $group) {
-                //error_log(date('Y-m-d H:i:s')."---------------------------".$group."\n", 3, '/var/www/glpi/files/_log/test.log');
                 $expired = [];
                 $iterator = $DB->request([
                     'SELECT'    => [
@@ -371,12 +350,155 @@ class Cron extends \CommonDBTM
                         'entities_id'  => 0,
                         'inactiontime' => $expired,
                         'recipients' => $recipients,
-                        'groupname' => $groupname,
-                        'items_id' => $recipient
+                        'groupname' => $groupname
                     ];
                     if(\NotificationEvent::raiseEvent('inaction_time', new InactionTime(), $params)) {
                         $allCnt += $cnt;
                     }
+                }
+            }
+            $task->addVolume($allCnt);
+            $task->log("Action successfully completed");
+            return true;
+        } catch (Exception $e) {
+            $e->getMessage();
+            print_r($e->getMessage());
+            $task->log($e->getMessage());
+            return false;
+        }
+        return false;
+    }
+
+    static function cronExpiredSlaETN($task) {
+        global $DB;
+
+        $config = Config::getConfig();
+
+        if(\Session::isCron() && date('H') != explode(':', $config['expiredsla_send_hour'])[0]) {
+            return true;
+        }
+
+        $allCnt = 0;
+        $category = new \ITILCategory;
+        $categories = getSonsOf($category->getTable(), $config['expiredsla_categories_id']);
+        
+        try {
+            $expired = [];
+            $iterator = $DB->request([
+                'SELECT'    => [
+                    'glpi_tickets.id AS id',
+                    'glpi_tickets.name AS name',
+                    'glpi_tickets.date AS date'
+                ],
+                'DISTINCT' => true,
+                'FROM'      => 'glpi_tickets',
+                'LEFT JOIN' => [
+                    'glpi_tickets_users' => [
+                        'FKEY' => [
+                            'glpi_tickets'          => 'id',
+                            'glpi_tickets_users'    => 'tickets_id'
+                        ]
+                    ],
+                    'glpi_users' => [
+                        'FKEY' => [
+                            'glpi_users'            => 'id',
+                            'glpi_tickets_users'    => 'users_id',
+                        ]
+                    ],
+                    'glpi_groups_users' => [
+                        'FKEY' => [
+                            'glpi_tickets_users'    => 'users_id',
+                            'glpi_groups_users'     => 'users_id',
+                        ]
+                    ],
+                ],
+                'WHERE'     => [
+                    'glpi_tickets.is_deleted'       => 0,
+                    'glpi_tickets.itilcategories_id'   => $categories,
+                    'glpi_users.is_active'          => 1,
+                    'glpi_tickets_users.type'       => 2,
+                    'glpi_tickets.status'  => ['<', 7],
+                    new \QueryExpression('`glpi_tickets`.`solvedate` IS NOT NULL'),
+                    [
+                        'OR' => [
+                            new \QueryExpression('`glpi_tickets`.`time_to_own` IS NOT NULL'), 
+                            new \QueryExpression('`glpi_tickets`.`time_to_resolve` IS NOT NULL')
+                        ],
+                        'OR' => [
+                            'glpi_tickets.takeintoaccount_delay_stat' => ['<', new \QueryExpression('TIMESTAMPDIFF(SECOND, `glpi_tickets`.`date_creation`, `glpi_tickets`.`time_to_own`)')], 
+                            new \QueryExpression('TIMESTAMPDIFF(SECOND, `glpi_tickets`.`time_to_resolve`, `glpi_tickets`.`solvedate`) > 0')
+                        ]
+                    ],
+                ],
+                'ORDERBY'   => 'id'
+            ]);
+            echo '<pre>';
+            
+            foreach($iterator as $id => $row) {
+                $row['requesters'] = '';
+                $row['specs'] = '';
+                $req = $DB->request([
+                    'SELECT'    => [
+                        'glpi_users.realname AS realname',
+                        'glpi_users.firstname AS firstname'
+                    ],
+                    'FROM'      => 'glpi_users',
+                    'LEFT JOIN' => [
+                        'glpi_tickets_users' => [
+                            'FKEY' => [
+                                'glpi_users' => 'id',
+                                'glpi_tickets_users' => 'users_id',
+                            ]
+                        ],
+                    ],
+                    'WHERE'     => [
+                        'glpi_users.is_active'          => 1,
+                        'glpi_tickets_users.type'       => 1,
+                        'glpi_tickets_users.tickets_id' => $row['id']
+                    ]
+                ]);
+                foreach($req as $user) {
+                    if($row['requesters']) $row['requesters'] .= '<br>';
+                    $row['requesters'] .= $user['realname'].' '.$user['firstname'];
+                }
+                $spec = $DB->request([
+                    'SELECT'    => [
+                        'glpi_users.realname AS realname',
+                        'glpi_users.firstname AS firstname'
+                    ],
+                    'FROM'      => 'glpi_users',
+                    'LEFT JOIN' => [
+                        'glpi_tickets_users' => [
+                            'FKEY' => [
+                                'glpi_users' => 'id',
+                                'glpi_tickets_users' => 'users_id',
+                            ]
+                        ],
+                    ],
+                    'WHERE'     => [
+                        'glpi_users.is_active'          => 1,
+                        'glpi_tickets_users.type'       => 2,
+                        'glpi_tickets_users.tickets_id' => $row['id']
+                    ]
+                ]);
+                foreach($spec as $user) {
+                    if($row['specs']) $row['specs'] .= '<br>';
+                    $row['specs'] .= $user['realname'].' '.$user['firstname'];
+                }
+                array_push($expired, $row);
+            }
+
+            if ($cnt = count($expired)) {
+                $categoryname = current($category->find(['id' => $config['expiredsla_categories_id']], [], 1))['name'];
+                $recipients = ExpiredSla::getUsers();
+                $params =  [
+                    'entities_id'  => 0,
+                    'expiredsla' => $expired,
+                    'recipients' => $recipients,
+                    'categoryname' => $categoryname
+                ];
+                if(\NotificationEvent::raiseEvent('expired_sla', new ExpiredSla(), $params)) {
+                    $allCnt += $cnt;
                 }
             }
             $task->addVolume($allCnt);

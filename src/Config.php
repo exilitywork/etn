@@ -169,7 +169,7 @@ class Config extends \CommonDBTM
         ]);
         echo '</td>';
         echo '</tr>';
-        echo '<tr class="tab_bg_1"><th colspan="4">'.__('Настройки Telegram для уведомлений', 'etn') . '</th></tr>';
+        echo '<tr class="tab_bg_1"><th colspan="5">'.__('Настройки Telegram для уведомлений', 'etn') . '</th></tr>';
         echo '<tr class="tab_bg_1">';
         echo '<td>';
         echo __('Telegram Bot Token');
@@ -255,7 +255,7 @@ class Config extends \CommonDBTM
             </script>';
         echo '</td>';
         echo '</tr>';
-        echo '<tr class="tab_bg_1"><th colspan="4">'.__('Настройки сбора статистики по заявкам', 'etn') . '</th></tr>';
+        echo '<tr class="tab_bg_1"><th colspan="5">'.__('Настройки сбора статистики по заявкам', 'etn') . '</th></tr>';
         echo '<tr>';
         echo '<td>';
         echo __('Топ инициаторов за месяц', 'etn');
@@ -268,7 +268,7 @@ class Config extends \CommonDBTM
         );
         echo '</td>';
         echo '</tr>';
-        echo '<tr class="tab_bg_1"><th colspan="4">'.__('Настройки времени бездействия', 'etn') . '</th></tr>';
+        echo '<tr class="tab_bg_1"><th colspan="5">'.__('Настройки времени бездействия', 'etn') . '</th></tr>';
         echo '<tr>';
         echo '<td>';
         echo __('Максимальное время бездействия по умолчанию', 'etn');
@@ -301,6 +301,41 @@ class Config extends \CommonDBTM
         \Html::showSimpleForm(
             '/front/crontask.form.php',
             ['execute' => 'CheckInactionTimeTicketETN'],
+            '<i class="fa-fw far fa-envelope"></i><span>'.__('Отправить на почту', 'etn').'</span>'
+        );
+        echo '</td>';
+        echo '</tr>';
+        echo '<tr class="tab_bg_1"><th colspan="5">'.__('Настройки отчета по нарушению SLA', 'etn') . '</th></tr>';
+        echo '<tr>';
+        echo '<td>';
+        echo __('Час, когда отправляется автоматический отчет по нарушению SLA на почту', 'etn');
+        echo '</td>';
+        echo '<td>';
+        \Dropdown::showHours('expiredsla_send_hour', [
+            'step'  => $CFG_GLPI['time_step'] * 12,
+            'value' => isset($config['expiredsla_send_hour']) ? $config['expiredsla_send_hour'] : '',
+        ]);
+        echo '</td>';
+        echo '</tr>';
+        echo '<tr>';
+        echo '<td>';
+        echo __('Категория (включая подкатегории), по которой выбирать заявки с нарушением SLA', 'etn');
+        echo '</td>';
+        echo '<td>';
+        \ITILCategory::dropdown([
+            'name' => 'expiredsla_categories_id', 
+            'value' => isset($config['expiredsla_categories_id']) ? $config['expiredsla_categories_id'] : ''
+        ]);
+        echo '</td>';
+        echo '</tr>';
+        echo '<tr>';
+        echo '<td>';
+        echo __('Отчет о нарушении SLA по заявкам категории', 'etn');
+        echo '</td>';
+        echo '<td>';
+        \Html::showSimpleForm(
+            '/front/crontask.form.php',
+            ['execute' => 'ExpiredSlaETN'],
             '<i class="fa-fw far fa-envelope"></i><span>'.__('Отправить на почту', 'etn').'</span>'
         );
         echo '</td>';
@@ -340,7 +375,7 @@ class Config extends \CommonDBTM
         echo "<form name='inaction_group_user_table$rand' id='inaction_group_user_table$rand' method='post' action=''>";
         if ($num > 0) {
             echo "<table class='tab_cadre_fixehov'>";
-            $header = "<tr><th>".__('Group')."</th><th>".__('User')."</th></tr>";
+            $header = "<tr><th>".__('Group')."</th><th>".__('User')."</th><th></th></tr>";
             echo $header;
             foreach ($iterator as $data) {
                 $group = current((new \Group)->find(['id' => $data["groups_id"]], [], 1))['name'];
@@ -348,7 +383,7 @@ class Config extends \CommonDBTM
                 echo "<tr class='tab_bg_1'>";
                 echo "<td>".$group."</td>";
                 echo "<td>".$user['realname'].' '.$user['firstname']."</td>";
-                echo '<td><a class="btn btn-sm btn-danger" href="?delete='.$data['id'].'"><span>Удалить</span></a></td>';
+                echo '<td class="center"><a class="btn btn-sm btn-danger" href="?delete='.$data['id'].'"><span>Удалить</span></a></td>';
                 echo "</tr>";
             }
             echo $header;
@@ -361,6 +396,55 @@ class Config extends \CommonDBTM
 
         \Html::closeForm();
         echo "</div>";
+
+        // Recipients of ExpiredSLA report
+        echo "<div class='firstbloc'>";
+        echo "<form name='inaction_group_user_form$rand' id='inaction_group_user_form$rand' method='post' action='/plugins/etn/front/config.php'>";
+        echo "<table class='tab_cadre_fixe'>";
+        echo "<tr class='tab_bg_1'><th colspan='6'>" . __('Управление адресатами уведомлений по нарушению SLA') . "</tr>";
+
+        echo "<tr class='tab_bg_2'><td class='center'>".__('User')."</td><td>";
+        \User::dropdown([
+            'right'         => "all",
+            'entity'        => 0,
+            'with_no_right' => true
+        ]);
+        echo "</td><td class='center'>";
+        echo "<input type='submit' name='add_sla_user' value=\"" . _sx('button', 'Add') . "\" class='btn btn-primary'>";
+        echo "</td></tr>";
+
+        echo "</table>";
+        \Html::closeForm();
+        echo "</div>";
+
+        $iterator = (new ExpiredSla)->find();
+        $num = count($iterator);
+
+        echo "<div class='spaced'>";
+        echo "<form name='expired_sla_table$rand' id='expired_sla_table$rand' method='post' action=''>";
+        if ($num > 0) {
+            echo "<table class='tab_cadre_fixehov'>";
+            $header = "<tr><th>".__('User')."</th><th></th></tr>";
+            echo $header;
+            foreach ($iterator as $data) {
+                $user = current((new \User)->find(['id' => $data["users_id"]], [], 1));
+                echo "<tr class='tab_bg_1'>";
+                echo "<td>".$user['realname'].' '.$user['firstname']."</td>";
+                echo '<td class="center"><a class="btn btn-sm btn-danger" href="?delete_sla_user='.$data['id'].'"><span>Удалить</span></a></td>';
+                echo "</tr>";
+            }
+            echo $header;
+            echo "</table>";
+        } else {
+            echo "<table class='tab_cadre_fixe'>";
+            echo "<tr><th>" . __('No item found') . "</th></tr>";
+            echo "</table>\n";
+        }
+
+        \Html::closeForm();
+        echo "</div>";
+
+        
 
         return true;
     }
