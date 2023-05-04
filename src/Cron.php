@@ -390,35 +390,12 @@ class Cron extends \CommonDBTM
                     'glpi_tickets.name AS name',
                     'glpi_tickets.date AS date'
                 ],
-                'DISTINCT' => true,
+                'DISTINCT'  => true,
                 'FROM'      => 'glpi_tickets',
-                'LEFT JOIN' => [
-                    'glpi_tickets_users' => [
-                        'FKEY' => [
-                            'glpi_tickets'          => 'id',
-                            'glpi_tickets_users'    => 'tickets_id'
-                        ]
-                    ],
-                    'glpi_users' => [
-                        'FKEY' => [
-                            'glpi_users'            => 'id',
-                            'glpi_tickets_users'    => 'users_id',
-                        ]
-                    ],
-                    'glpi_groups_users' => [
-                        'FKEY' => [
-                            'glpi_tickets_users'    => 'users_id',
-                            'glpi_groups_users'     => 'users_id',
-                        ]
-                    ],
-                ],
                 'WHERE'     => [
-                    'glpi_tickets.is_deleted'       => 0,
-                    'glpi_tickets.itilcategories_id'   => $categories,
-                    'glpi_users.is_active'          => 1,
-                    'glpi_tickets_users.type'       => 2,
-                    'glpi_tickets.status'  => ['<', 7],
-                    new \QueryExpression('`glpi_tickets`.`solvedate` IS NOT NULL'),
+                    'glpi_tickets.is_deleted'           => 0,
+                    'glpi_tickets.itilcategories_id'    => $categories,
+                    'glpi_tickets.status'               => ['<', 7],
                     [
                         'OR' => [
                             new \QueryExpression('`glpi_tickets`.`time_to_own` IS NOT NULL'), 
@@ -426,7 +403,8 @@ class Cron extends \CommonDBTM
                         ],
                         'OR' => [
                             'glpi_tickets.takeintoaccount_delay_stat' => ['<', new \QueryExpression('TIMESTAMPDIFF(SECOND, `glpi_tickets`.`date_creation`, `glpi_tickets`.`time_to_own`)')], 
-                            new \QueryExpression('TIMESTAMPDIFF(SECOND, `glpi_tickets`.`time_to_resolve`, `glpi_tickets`.`solvedate`) > 0')
+                            new \QueryExpression('TIMESTAMPDIFF(SECOND, `glpi_tickets`.`time_to_resolve`, `glpi_tickets`.`solvedate`) > 0'),
+                            new \QueryExpression('TIMESTAMPDIFF(SECOND, `glpi_tickets`.`time_to_resolve`, NOW()) > 0')
                         ]
                     ],
                 ],
