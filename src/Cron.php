@@ -395,7 +395,7 @@ class Cron extends \CommonDBTM
                 'WHERE'     => [
                     'glpi_tickets.is_deleted'           => 0,
                     'glpi_tickets.itilcategories_id'    => $categories,
-                    'glpi_tickets.status'               => ['<', 7],
+                    'glpi_tickets.status'               => ['<', 5],
                     [
                         'OR' => [
                             new \QueryExpression('`glpi_tickets`.`time_to_own` IS NOT NULL'), 
@@ -410,7 +410,6 @@ class Cron extends \CommonDBTM
                 ],
                 'ORDERBY'   => 'id'
             ]);
-            echo '<pre>';
             
             foreach($iterator as $id => $row) {
                 $row['requesters'] = '';
