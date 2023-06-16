@@ -22,7 +22,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Extended Ticket's Notification. If not, see <http://www.gnu.org/licenses/>.
  * -------------------------------------------------------------------------
- * @copyright Copyright (C) 2022-2022 by Oleg Кapeshko
+ * @copyright Copyright (C) 2022-2023 by Oleg Кapeshko
  * @license   GPLv2 https://www.gnu.org/licenses/gpl-2.0.html
  * @link      https://github.com/exilitywork/etn
  * -------------------------------------------------------------------------
@@ -35,6 +35,7 @@ use GlpiPlugin\Etn\User;
 use GlpiPlugin\Etn\NotificationTargetTopRequesters;
 use GlpiPlugin\Etn\NotificationTargetInactionTime;
 use GlpiPlugin\Etn\NotificationTargetExpiredSla;
+use GlpiPlugin\Etn\NotificationTargetTicketCategory;
 
 /**
  * Plugin install process
@@ -49,6 +50,7 @@ function plugin_etn_install() {
    NotificationTargetTopRequesters::init();
    NotificationTargetInactionTime::init();
    NotificationTargetExpiredSla::init();
+   NotificationTargetTicketCategory::init();
 
    $cron = new \CronTask();
    if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'SendMessageTelegeramETN')) {

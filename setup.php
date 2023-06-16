@@ -22,13 +22,13 @@
  * You should have received a copy of the GNU General Public License
  * along with Extended Ticket's Notification. If not, see <http://www.gnu.org/licenses/>.
  * -------------------------------------------------------------------------
- * @copyright Copyright (C) 2022-2022 by Oleg Кapeshko
+ * @copyright Copyright (C) 2022-2023 by Oleg Кapeshko
  * @license   GPLv2 https://www.gnu.org/licenses/gpl-2.0.html
  * @link      https://github.com/exilitywork/etn
  * -------------------------------------------------------------------------
  */
 
-define('PLUGIN_ETN_VERSION', '0.9.9');
+define('PLUGIN_ETN_VERSION', '1.0.0');
 
 // Minimal GLPI version, inclusive
 define("PLUGIN_ETN_MIN_GLPI_VERSION", "10.0.1");
@@ -38,6 +38,7 @@ define("PLUGIN_ETN_MAX_GLPI_VERSION", "10.0.99");
 use Glpi\Plugin\Hooks;
 use GlpiPlugin\Etn\Config;
 use GlpiPlugin\Etn\SlaInfo;
+use GlpiPlugin\Etn\TicketCategory;
 use GlpiPlugin\Etn\TopRequesters;
 
 require_once 'vendor/autoload.php';
@@ -69,7 +70,11 @@ function plugin_init_etn()
     $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['etn'] = 'plugin_etn_hook_post_item_form';
     $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] = ['GlpiPlugin\Etn\NotificationTargetInactionTime' => ['GlpiPlugin\Etn\InactionTime', 'addRecipient']];
     $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] = ['GlpiPlugin\Etn\NotificationTargetExpiredSla' => ['GlpiPlugin\Etn\ExpiredSla', 'addRecipient']];
+    $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] = ['NotificationTargetTicket' => ['GlpiPlugin\Etn\TicketCategory', 'addRecipient']];
     $CFG_GLPI["notificationtemplates_types"][] = TopRequesters::class;
+    $PLUGIN_HOOKS['item_get_events']['etn'] = [NotificationTargetTicket::class => ['GlpiPlugin\Etn\NotificationTargetTicketCategory', 'addEvents']];
+    $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['etn'] = ['Ticket' => ['GlpiPlugin\Etn\TicketCategory', 'updateTicket']];
+    $PLUGIN_HOOKS[Hooks::ITEM_ADD]['etn'] = ['Ticket' => ['GlpiPlugin\Etn\TicketCategory', 'addTicket']];
 }
 
 /**

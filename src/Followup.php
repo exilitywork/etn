@@ -36,6 +36,9 @@ if (!defined('GLPI_ROOT')) {
 
 class Followup extends \CommonDBTM
 {
+
+    //public $deduplicate_queued_notifications = false;
+
     /**
      * Add followup 
      *
@@ -45,6 +48,19 @@ class Followup extends \CommonDBTM
     **/
     static function addFollowup($item) {
         global $CFG_GLPI;
+
+        // send notification for certain category of ticket
+        if($item->fields['itemtype'] == 'Ticket' && isset($item->fields['items_id'])) {
+            $ticket = new \Ticket();
+            if($ticket->getFromDB($item->fields['items_id'])) {
+                $config = Config::getConfig();
+                $category = new \ITILCategory;
+                $categories = getSonsOf($category->getTable(), $config['expiredsla_categories_id']);
+                if(in_array($ticket->fields['itilcategories_id'], $categories)) {
+                    \NotificationEvent::raiseEvent('add_followup_category', $ticket);
+                }
+            }
+        }
 
         // is temporary BAD! solution for specific cases
         $imgs = [];
@@ -103,7 +119,6 @@ class Followup extends \CommonDBTM
             $item->input['content'] = str_replace('&#62;', '>', $item->input['content']);
             $item->input['content'] = str_replace('&#60;', '<', $item->input['content']);
             $item->input['content'] = str_replace('&#38;nbsp;', '', $item->input['content']);
-            //file_put_contents('content.txt', $item->input['content']);
             $item->input['content'] = preg_replace('(<![ a-zA-Z0-9\[\]!-]+>)', '', $item->input['content']);
             $item->input['content'] = str_replace('&#38;#43;', '+', $item->input['content']);
         }

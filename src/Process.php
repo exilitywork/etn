@@ -22,7 +22,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Extended Ticket's Notification. If not, see <http://www.gnu.org/licenses/>.
  * -------------------------------------------------------------------------
- * @copyright Copyright (C) 2022-2022 by Oleg Кapeshko
+ * @copyright Copyright (C) 2022-2023 by Oleg Кapeshko
  * @license   GPLv2 https://www.gnu.org/licenses/gpl-2.0.html
  * @link      https://github.com/exilitywork/etn
  * -------------------------------------------------------------------------
@@ -218,7 +218,6 @@ class Process extends \CommonDBTM
         
         // add to notification's template tag of ticket's priority up
         $item->data['##ticket.priorityup##'] = $url.'&priority_up=4';
-        
         
         return $item;
     }
