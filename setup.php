@@ -74,7 +74,6 @@ function plugin_init_etn()
     $CFG_GLPI["notificationtemplates_types"][] = TopRequesters::class;
     $PLUGIN_HOOKS['item_get_events']['etn'] = [NotificationTargetTicket::class => ['GlpiPlugin\Etn\NotificationTargetTicketCategory', 'addEvents']];
     $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['etn'] = ['Ticket' => ['GlpiPlugin\Etn\TicketCategory', 'updateTicket']];
-    $PLUGIN_HOOKS[Hooks::ITEM_ADD]['etn'] = ['Ticket' => ['GlpiPlugin\Etn\TicketCategory', 'addTicket']];
 }
 
 /**

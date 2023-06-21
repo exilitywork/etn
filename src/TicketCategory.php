@@ -40,19 +40,17 @@ class TicketCategory extends \CommonDBTM {
         return 'TicketCategory';
     }
 
-    public static function addTicket(\Ticket $item) {
-        $config = Config::getConfig();
-        $category = new \ITILCategory;
-        $categories = getSonsOf($category->getTable(), $config['expiredsla_categories_id']);
-        if(in_array($item->fields['itilcategories_id'], $categories)) {
-            \NotificationEvent::raiseEvent('new_ticket_category', $item);
-        }
-    }
-
     public static function updateTicket(\Ticket $item) {
         $config = Config::getConfig();
         $category = new \ITILCategory;
         $categories = getSonsOf($category->getTable(), $config['expiredsla_categories_id']);
+
+        // send notification when certain category choosed
+        if(in_array($item->fields['itilcategories_id'], $categories) && in_array('itilcategories_id', $item->updates)) {
+            \NotificationEvent::raiseEvent('new_ticket_category', $item);
+        }
+
+        // send notification when ticket of certain category solved 
         if(in_array($item->fields['itilcategories_id'], $categories) && $item->fields['status'] >= 5) {
             \NotificationEvent::raiseEvent('solved_ticket_category', $item);
         }
