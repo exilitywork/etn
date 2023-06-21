@@ -44,9 +44,10 @@ class TicketCategory extends \CommonDBTM {
         $config = Config::getConfig();
         $category = new \ITILCategory;
         $categories = getSonsOf($category->getTable(), $config['expiredsla_categories_id']);
-
+        
         // send notification when certain category choosed
-        if(in_array($item->fields['itilcategories_id'], $categories) && in_array('itilcategories_id', $item->updates)) {
+        $count = count((new \Ticket_User)->find(['tickets_id' => $item->fields['id'], 'type' => 2]));
+        if(in_array($item->fields['itilcategories_id'], $categories) && $item->fields['status'] == 2 && $count) {
             \NotificationEvent::raiseEvent('new_ticket_category', $item);
         }
 
