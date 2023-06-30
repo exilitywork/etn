@@ -70,8 +70,8 @@ function plugin_init_etn()
     $PLUGIN_HOOKS[Hooks::POST_SHOW_TAB]['etn'] = ['GlpiPlugin\Etn\User', 'showUsernameField'];
     $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['etn'] = 'plugin_etn_hook_post_item_form';
     $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] = ['GlpiPlugin\Etn\NotificationTargetInactionTime' => ['GlpiPlugin\Etn\InactionTime', 'addRecipient']];
-    $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] = ['GlpiPlugin\Etn\NotificationTargetExpiredSla' => ['GlpiPlugin\Etn\ExpiredSla', 'addRecipient']];
-    $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] = ['NotificationTargetTicket' => ['GlpiPlugin\Etn\TicketCategory', 'addRecipient']];
+    $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] += ['GlpiPlugin\Etn\NotificationTargetExpiredSla' => ['GlpiPlugin\Etn\ExpiredSla', 'addRecipient']];
+    $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] += ['NotificationTargetTicket' => ['GlpiPlugin\Etn\TicketCategory', 'addRecipient']];
     $CFG_GLPI["notificationtemplates_types"][] = TopRequesters::class;
     $PLUGIN_HOOKS['item_get_events']['etn'] = [NotificationTargetTicket::class => ['GlpiPlugin\Etn\NotificationTargetTicketCategory', 'addEvents']];
     $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['etn'] = ['Ticket' => ['GlpiPlugin\Etn\TicketCategory', 'updateTicket']];

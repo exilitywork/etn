@@ -163,7 +163,7 @@ class InactionTime extends \CommonDBTM {
     static function addRecipient($item) {
         
         unset($item->target);
-
+        
         $recipients = $item->options['recipients'];
 
         foreach($recipients as $id) {
