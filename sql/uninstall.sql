@@ -10,3 +10,5 @@ DROP TABLE `glpi_plugin_etn_toprequesters`;
 DROP TABLE `glpi_plugin_etn_inactiontimes`;
 DROP TABLE `glpi_plugin_etn_inactiontimes_groups_users`;
 DROP TABLE `glpi_plugin_etn_expiredslas`;
+DROP TABLE `glpi_plugin_etn_itemtypes`;
+DROP TABLE `glpi_plugin_etn_itemtyperecipients`;

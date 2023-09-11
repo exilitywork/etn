@@ -76,9 +76,10 @@ class Config extends \CommonDBTM
    function defineTabs($options = []) {
 
     $ong        = [];
-    $this->addStandardTab("GlpiPlugin\Etn\Config", $ong, $options);
+    $this->addStandardTab('GlpiPlugin\Etn\Config', $ong, $options);
+    $this->addStandardTab('GlpiPlugin\Etn\Itemtype', $ong, $options);
     //$this->addStandardTab('Log', $ong, $options);
-
+//print_r($ong);die();
     return $ong;
  }
 
@@ -90,9 +91,9 @@ class Config extends \CommonDBTM
      * @return string|array name of the tab
      */
     function getTabNameForItem(\CommonGLPI $item, $withtemplate = 0) {
-        if ($item->getType()==__CLASS__) {
+        if ($item->getType() == __CLASS__) {
             return [
-                __('Config')
+                __('Общие')
             ];
         }
         return '';
@@ -106,17 +107,28 @@ class Config extends \CommonDBTM
     * @param integer $withtemplate 1 if is a template form
     * @return boolean
     */
-   static function displayTabContentForItem($item, $tabnum = 0, $withtemplate = 0) {
-
-    $opt = current($item->find([], [], 1));
-    $item->getFromDB($opt['id']);
-    switch ($tabnum) {
-       case 0:
-          $item->showForm();
-          return true;
+    static function displayTabContentForItem($item, $tabnum = 0, $withtemplate = 0) {
+        $opt = current($item->find([], [], 1));
+        $item->getFromDB($opt['id']);
+        switch ($tabnum) {
+        case 0:
+            $item->showForm();
+            return true;
+        }
+        return false;
     }
-    return false;
- }
+
+    /**
+     * Show tabs
+     *
+     * @param array $options parameters to add to URLs and ajax
+     *     - withtemplate is a template view ?
+     *
+     * @return void
+     **/
+    public function showNavigationHeader($options = []) {
+    }
+
     /**
      * Display form
      *
@@ -131,6 +143,7 @@ class Config extends \CommonDBTM
         $config = self::getConfig();
 
         $options['formtitle']       = __('Extended Ticket\'s Notification', 'etn');
+        $options['no_header']       = true;
         $options['colspan']         = 4;
         $options['withtemplate']    = 0;
         $options['target']          = $CFG_GLPI["root_doc"].'/plugins/etn/front/config.php';
@@ -399,7 +412,7 @@ class Config extends \CommonDBTM
 
         // Recipients of ExpiredSLA report
         echo "<div class='firstbloc'>";
-        echo "<form name='inaction_group_user_form$rand' id='inaction_group_user_form$rand' method='post' action='/plugins/etn/front/config.php'>";
+        echo "<form name='expired_sla_form$rand' id='expired_sla_form$rand' method='post' action='/plugins/etn/front/config.php'>";
         echo "<table class='tab_cadre_fixe'>";
         echo "<tr class='tab_bg_1'><th colspan='6'>" . __('Управление адресатами уведомлений по нарушению SLA') . "</tr>";
 
@@ -443,6 +456,49 @@ class Config extends \CommonDBTM
 
         \Html::closeForm();
         echo "</div>";
+
+        // Itemtypes for reporting if item added
+        /*echo "<div class='firstbloc'>";
+        echo "<form name='item_add_form$rand' id='item_add_form$rand' method='post' action='/plugins/etn/front/config.php'>";
+        echo "<table class='tab_cadre_fixe'>";
+        echo "<tr class='tab_bg_1'><th colspan='6'>" . __('Типы устройств, для которых применяются уведомления') . "</tr>";
+
+        echo "<tr class='tab_bg_2'><td class='center'>".__('Itemtype')."</td><td>";       
+        Itemtype::getItemtypeDropdown();
+        echo "</td><td class='center'>";
+        echo "<input type='submit' name='add_itemtype' value=\"" . _sx('button', 'Add') . "\" class='btn btn-primary'>";
+        echo "</td></tr>";
+
+        echo "</table>";
+        \Html::closeForm();
+        echo "</div>";
+
+        $iterator = (new Itemtype)->find();
+        $num = count($iterator);
+
+        echo "<div class='spaced'>";
+        echo "<form name='item_add_table$rand' id='item_add_table$rand' method='post' action=''>";
+        if ($num > 0) {
+            echo "<table class='tab_cadre_fixehov'>";
+            $header = "<tr><th>".__('Itemtype')."</th><th></th></tr>";
+            echo $header;
+            foreach ($iterator as $data) {
+                //$user = current((new \User)->find(['id' => $data['users_id']], [], 1));
+                echo "<tr class='tab_bg_1'>";
+                echo "<td>".getItemForItemtype($data['itemtypes_id'])->getTypeName(1)."</td>";
+                echo '<td class="center"><a class="btn btn-sm btn-danger" href="?delete_itemtype='.$data['id'].'"><span>Удалить</span></a></td>';
+                echo "</tr>";
+            }
+            echo $header;
+            echo "</table>";
+        } else {
+            echo "<table class='tab_cadre_fixe'>";
+            echo "<tr><th>" . __('No item found') . "</th></tr>";
+            echo "</table>\n";
+        }
+
+        \Html::closeForm();
+        echo "</div>";*/
 
         
 

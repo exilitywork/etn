@@ -28,7 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
-define('PLUGIN_ETN_VERSION', '1.0.0');
+define('PLUGIN_ETN_VERSION', '1.1.0');
 
 // Minimal GLPI version, inclusive
 define("PLUGIN_ETN_MIN_GLPI_VERSION", "10.0.1");
@@ -40,6 +40,7 @@ use GlpiPlugin\Etn\Config;
 use GlpiPlugin\Etn\SlaInfo;
 use GlpiPlugin\Etn\TicketCategory;
 use GlpiPlugin\Etn\TopRequesters;
+use GlpiPlugin\Etn\Itemtype;
 
 require_once 'vendor/autoload.php';
 
@@ -65,14 +66,20 @@ function plugin_init_etn()
     $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['etn'] = ['User' => ['GlpiPlugin\Etn\User', 'updateUser']];
     $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['etn'] = ['ITILCategory' => ['GlpiPlugin\Etn\InactionTime', 'updateITILCategory']];
     $PLUGIN_HOOKS[Hooks::PRE_ITEM_ADD]['etn'] = ['ITILFollowup' => ['GlpiPlugin\Etn\Followup', 'preAddFollowup']];
-    $PLUGIN_HOOKS[Hooks::ITEM_ADD]['etn'] = ['ITILFollowup' => ['GlpiPlugin\Etn\Followup', 'addFollowup']];
+    $items = ['ITILFollowup' => ['GlpiPlugin\Etn\Followup', 'addFollowup']];
+    $itemtypes = (new Itemtype)->find();
+    foreach($itemtypes as $itemtype) {
+        $items += [$itemtype['itemtypes_id'] => ['GlpiPlugin\Etn\Itemtype', 'addItem']];
+    }
+    $PLUGIN_HOOKS[Hooks::ITEM_ADD]['etn'] = $items;
     $PLUGIN_HOOKS[Hooks::ITEM_GET_DATA]['etn'] = ['NotificationTargetTicket' => ['GlpiPlugin\Etn\Process', 'modifyNotification']];
     $PLUGIN_HOOKS[Hooks::POST_SHOW_TAB]['etn'] = ['GlpiPlugin\Etn\User', 'showUsernameField'];
     $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['etn'] = 'plugin_etn_hook_post_item_form';
     $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] = ['GlpiPlugin\Etn\NotificationTargetInactionTime' => ['GlpiPlugin\Etn\InactionTime', 'addRecipient']];
     $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] += ['GlpiPlugin\Etn\NotificationTargetExpiredSla' => ['GlpiPlugin\Etn\ExpiredSla', 'addRecipient']];
+    $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] += ['GlpiPlugin\Etn\NotificationTargetItemtype' => ['GlpiPlugin\Etn\Itemtype', 'addRecipient']];
     $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] += ['NotificationTargetTicket' => ['GlpiPlugin\Etn\TicketCategory', 'addRecipient']];
-    $CFG_GLPI["notificationtemplates_types"][] = TopRequesters::class;
+    $CFG_GLPI['notificationtemplates_types'][] = TopRequesters::class;
     $PLUGIN_HOOKS['item_get_events']['etn'] = [NotificationTargetTicket::class => ['GlpiPlugin\Etn\NotificationTargetTicketCategory', 'addEvents']];
     $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['etn'] = ['Ticket' => ['GlpiPlugin\Etn\TicketCategory', 'updateTicket']];
 }

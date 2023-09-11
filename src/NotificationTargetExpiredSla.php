@@ -95,7 +95,7 @@ class NotificationTargetExpiredSla extends \NotificationTarget {
             'expiredsla.date'         => __('Opening date'),
             'expiredsla.requesters'   => __('Инициаторы', 'etn'),
             'expiredsla.specs'        => __('Специалисты', 'etn'),
-            'expiredsla.action'       => 'Отчет о нарушении SLA по заявкам категории "'.$this->options['categoryname'].'" за '.date('d-m-Y H:i')
+            'expiredsla.action'       => 'Отчет о нарушении SLA по заявкам категории "'.(!empty($this->options['categoryname']) ? $this->options['categoryname'] : '').'" за '.date('d-m-Y H:i')
         ];
 
         foreach ($tags as $tag => $label) {

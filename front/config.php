@@ -31,6 +31,8 @@ use Glpi\Application\View\TemplateRenderer;
 use GlpiPlugin\Etn\Config;
 use GlpiPlugin\Etn\ExpiredSla;
 use GlpiPlugin\Etn\InactionTime_Group_User;
+use GlpiPlugin\Etn\Itemtype;
+use GlpiPlugin\Etn\ItemtypeRecipients;
 
 global $CFG_GLPI, $DB;
 
@@ -76,8 +78,34 @@ if(!empty($_POST) && isset($_POST['add_sla_user'])) {
     }
 }
 if(!empty($_REQUEST) && isset($_REQUEST['delete_sla_user'])) {
-    $itgu = new ExpiredSla;
-    $itgu->deleteByCriteria(['id' => $_REQUEST['delete_sla_user']]);
+    $expiredSlaUser = new ExpiredSla;
+    $expiredSlaUser->deleteByCriteria(['id' => $_REQUEST['delete_sla_user']]);
+}
+
+// add or delete itemtypes for reporting
+if(!empty($_POST) && isset($_POST['add_itemtype'])) {
+    $itemtype = new Itemtype;
+    $itemtype->fields['itemtypes_id'] = $_POST['itemtype'];
+    if(!(current($itemtype->find(['itemtypes_id' => $_POST['itemtype']], [], 1)))) {
+        $itemtype->addToDB();
+    }
+}
+if(!empty($_REQUEST) && isset($_REQUEST['delete_itemtype'])) {
+    $itemtype = new Itemtype;
+    $itemtype->deleteByCriteria(['id' => $_REQUEST['delete_itemtype']]);
+}
+
+// add or delete users for new item notify
+if(!empty($_POST) && isset($_POST['add_item_recipients'])) {
+    $itemtype = new ItemtypeRecipients;
+    $itemtype->fields['users_id'] = $_POST['users_id'];
+    if(!(current($itemtype->find(['users_id' => $_POST['users_id']], [], 1)))) {
+        $itemtype->addToDB();
+    }
+}
+if(!empty($_REQUEST) && isset($_REQUEST['delete_item_recipients'])) {
+    $itemtype = new ItemtypeRecipients;
+    $itemtype->deleteByCriteria(['id' => $_REQUEST['delete_item_recipients']]);
 }
 
 $config = new Config();
