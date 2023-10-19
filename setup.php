@@ -78,6 +78,7 @@ function plugin_init_etn()
     $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] = ['GlpiPlugin\Etn\NotificationTargetInactionTime' => ['GlpiPlugin\Etn\InactionTime', 'addRecipient']];
     $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] += ['GlpiPlugin\Etn\NotificationTargetExpiredSla' => ['GlpiPlugin\Etn\ExpiredSla', 'addRecipient']];
     $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] += ['GlpiPlugin\Etn\NotificationTargetItemtype' => ['GlpiPlugin\Etn\Itemtype', 'addRecipient']];
+    $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] += ['GlpiPlugin\Etn\NotificationTargetTakeIntoAccountTime' => ['GlpiPlugin\Etn\TakeIntoAccountTime', 'addRecipient']];
     $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] += ['NotificationTargetTicket' => ['GlpiPlugin\Etn\TicketCategory', 'addRecipient']];
     $CFG_GLPI['notificationtemplates_types'][] = TopRequesters::class;
     $PLUGIN_HOOKS['item_get_events']['etn'] = [NotificationTargetTicket::class => ['GlpiPlugin\Etn\NotificationTargetTicketCategory', 'addEvents']];

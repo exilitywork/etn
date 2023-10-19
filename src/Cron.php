@@ -534,7 +534,8 @@ class Cron extends \CommonDBTM
                 'entities_id' => 0,
                 'avgtime' => TakeIntoAccountTime::calculateAvgTaketime($dateBegin->format('Y-m-d'), $dateEnd->format('Y-m-d')),
                 'datebegin' => $dateBegin->format('Y-m-d'),
-                'dateend' => $dateEnd->format('Y-m-d')
+                'dateend' => $dateEnd->format('Y-m-d'),
+                'recipients' => $recipients
             ];
             //print_r($params);die();
             if(\NotificationEvent::raiseEvent('take_time', new TakeIntoAccountTime(), $params)) {

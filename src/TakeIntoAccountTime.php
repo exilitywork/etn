@@ -167,7 +167,7 @@ class TakeIntoAccountTime extends \CommonDBTM {
     }
 
     static function addRecipient($item) {
-        
+
         unset($item->target);
 
         $recipients = $item->options['recipients'];
@@ -176,7 +176,7 @@ class TakeIntoAccountTime extends \CommonDBTM {
             $email = current((new \UserEmail)->find(['users_id' => $id, 'is_default' => 1], [], 1))['email'];
             $user = current((new \User)->find(['id' => $id], [], 1));
 
-            if ($item->getType() == 'GlpiPlugin\Etn\NotificationTargetExpiredSla') {
+            if ($item->getType() == 'GlpiPlugin\Etn\NotificationTargetTakeIntoAccountTime') {
                 $item->target[$email]['language'] = 'ru_RU';
                 $item->target[$email]['additionnaloption']['usertype'] = 2;
                 $item->target[$email]['username'] = $user['realname'].' '.$user['firstname'];
@@ -288,7 +288,7 @@ class TakeIntoAccountTime extends \CommonDBTM {
         $endDate->add(DateInterval::createFromDateString($delay.' seconds'));
         $taketime = new self;
         $taketime->fields['id'] = $ticket->input['id'];
-        $taketime->fields['takeintoacoount_time'] = self::businessTime($beginDate, $endDate);
+        $taketime->fields['takeintoaccount_time'] = self::businessTime($beginDate, $endDate);
         $taketime->fields['date'] = $ticket->input['date'];
         if($curTaketime = current($taketime->find(['id' => $ticket->input['id']], [], 1))) {
             $taketime->updateInDB(array_keys($taketime->fields));
@@ -328,12 +328,12 @@ class TakeIntoAccountTime extends \CommonDBTM {
         global $DB;
         $iterator = $DB->request([
             'SELECT'    => [
-                'AVG' => 'takeintoacoount_time AS avg_take_time'
+                'AVG' => 'takeintoaccount_time AS avg_take_time'
             ],
             'DISTINCT'  => true,
             'FROM'      => 'glpi_plugin_etn_takeintoaccounttimes',
             'WHERE'     => [
-                'takeintoacoount_time'   => ['>', 0],
+                'takeintoaccount_time'   => ['>', 0],
                 new \QueryExpression('date BETWEEN "'.$dateBegin.'" AND "'.$dateEnd.'"')
             ],
         ]);

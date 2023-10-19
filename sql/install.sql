@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_itemtyperecipients`
 CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_takeintoaccounttimes`
 (
     `id` INT UNSIGNED NOT NULL,
-    `takeintoacoount_time` INT UNSIGNED NOT NULL,
+    `takeintoacсount_time` INT UNSIGNED NOT NULL,
     `date` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
