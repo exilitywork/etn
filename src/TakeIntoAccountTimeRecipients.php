@@ -34,39 +34,18 @@ if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access directly to this file");
 }
 
-class TicketCategory extends \CommonDBTM {
+class TakeIntoAccountTimeRecipients extends \CommonDBTM {
 
     public static function getTypeName($nb = 0) {
-        return 'TicketCategory';
+        return 'TakeIntoAccountTimeRecipients';
     }
 
-    public static function updateTicket(\Ticket $item) {
-
-        TakeIntoAccountTime::updateTime($item);
-
-        $config = Config::getConfig();
-        $category = new \ITILCategory;
-        $categories = getSonsOf($category->getTable(), $config['expiredsla_categories_id']);
-        
-        // send notification when certain category choosed
-        $count = count((new \Ticket_User)->find(['tickets_id' => $item->fields['id'], 'type' => 2]));
-        if(in_array($item->fields['itilcategories_id'], $categories) && $item->fields['status'] == 2 && $count) {
-            \NotificationEvent::raiseEvent('new_ticket_category', $item);
+    static function getUsers() {
+        $users = [];
+        $items = (new self)->find();
+        foreach($items as $item) {
+            array_push($users, $item['users_id']);
         }
-
-        // send notification when ticket of certain category solved 
-        if(in_array($item->fields['itilcategories_id'], $categories) && $item->fields['status'] >= 5) {
-            \NotificationEvent::raiseEvent('solved_ticket_category', $item);
-        }
-    }
-
-    static function addRecipient($item) {
-        $events = array_keys((new NotificationTargetTicketCategory)->getEvents());
-        $config = Config::getConfig();
-        $category = new \ITILCategory;
-        $categories = getSonsOf($category->getTable(), $config['expiredsla_categories_id']);
-        if(in_array($item->obj->fields['itilcategories_id'], $categories) && !in_array($item->raiseevent, $events)) {
-            unset($item->target);
-        }
+        return array_unique($users);
     }
 }

@@ -28,6 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
+//include ("../../inc/includes.php");
 use GlpiPlugin\Etn\InactionTime;
 use GlpiPlugin\Etn\Process;
 use GlpiPlugin\Etn\Ldap;
@@ -37,6 +38,8 @@ use GlpiPlugin\Etn\NotificationTargetInactionTime;
 use GlpiPlugin\Etn\NotificationTargetExpiredSla;
 use GlpiPlugin\Etn\NotificationTargetTicketCategory;
 use GlpiPlugin\Etn\NotificationTargetItemtype;
+use GlpiPlugin\Etn\NotificationTargetTakeIntoAccountTime;
+use GlpiPlugin\Etn\TakeIntoAccountTime;
 
 /**
  * Plugin install process
@@ -44,82 +47,91 @@ use GlpiPlugin\Etn\NotificationTargetItemtype;
  * @return boolean
  */
 function plugin_etn_install() {
-   global $DB;
+    global $DB;
 
-   if(!$DB->runFile(GLPI_ROOT . "/plugins/etn/sql/install.sql")) die("SQL error");
+    if(!$DB->runFile(GLPI_ROOT . "/plugins/etn/sql/install.sql")) die("SQL error");
 
-   NotificationTargetTopRequesters::init();
-   NotificationTargetInactionTime::init();
-   NotificationTargetExpiredSla::init();
-   NotificationTargetTicketCategory::init();
-   NotificationTargetItemtype::init();
+    NotificationTargetTopRequesters::init();
+    NotificationTargetInactionTime::init();
+    NotificationTargetExpiredSla::init();
+    NotificationTargetTicketCategory::init();
+    NotificationTargetItemtype::init();
+    NotificationTargetTakeIntoAccountTime::init();
 
-   $cron = new \CronTask();
-   if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'SendMessageTelegeramETN')) {
-      \CronTask::Register('GlpiPlugin\Etn\Cron', 'SendMessageTelegeramETN', 300,
-                           ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
-   }
-   if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'ListenMessageTelegramETN')) {
-      \CronTask::Register('GlpiPlugin\Etn\Cron', 'ListenMessageTelegramETN', 300,
-                           ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
-   }
-   if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'TicketStatCalculationETN')) {
-      \CronTask::Register('GlpiPlugin\Etn\Cron', 'TicketStatCalculationETN', HOUR_TIMESTAMP,
-                           ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
-   }
-   if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'SendTopRequestersETN')) {
-      \CronTask::Register('GlpiPlugin\Etn\Cron', 'SendTopRequestersETN', HOUR_TIMESTAMP,
-                           ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
-   }
-   if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'CheckInactionTimeTicketETN')) {
-      \CronTask::Register('GlpiPlugin\Etn\Cron', 'CheckInactionTimeTicketETN', HOUR_TIMESTAMP,
-                           ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
-   }
-   if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'ExpiredSlaETN')) {
-      \CronTask::Register('GlpiPlugin\Etn\Cron', 'ExpiredSlaETN', HOUR_TIMESTAMP,
-                           ['state' => \CronTask::STATE_DISABLE, 'mode' => 2]);
-   }
+    $cron = new \CronTask();
+    if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'SendMessageTelegeramETN')) {
+        \CronTask::Register('GlpiPlugin\Etn\Cron', 'SendMessageTelegeramETN', 300,
+                            ['state' => \CronTask::STATE_WAITING, 'mode' => 2]);
+    }
+    if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'ListenMessageTelegramETN')) {
+        \CronTask::Register('GlpiPlugin\Etn\Cron', 'ListenMessageTelegramETN', 300,
+                            ['state' => \CronTask::STATE_WAITING, 'mode' => 2]);
+    }
+    if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'TicketStatCalculationETN')) {
+        \CronTask::Register('GlpiPlugin\Etn\Cron', 'TicketStatCalculationETN', HOUR_TIMESTAMP,
+                            ['state' => \CronTask::STATE_WAITING, 'mode' => 2]);
+    }
+    if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'SendTopRequestersETN')) {
+        \CronTask::Register('GlpiPlugin\Etn\Cron', 'SendTopRequestersETN', HOUR_TIMESTAMP,
+                            ['state' => \CronTask::STATE_WAITING, 'mode' => 2]);
+    }
+    if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'CheckInactionTimeTicketETN')) {
+        \CronTask::Register('GlpiPlugin\Etn\Cron', 'CheckInactionTimeTicketETN', HOUR_TIMESTAMP,
+                            ['state' => \CronTask::STATE_WAITING, 'mode' => 2]);
+    }
+    if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'ExpiredSlaETN')) {
+        \CronTask::Register('GlpiPlugin\Etn\Cron', 'ExpiredSlaETN', HOUR_TIMESTAMP,
+                            ['state' => \CronTask::STATE_WAITING, 'mode' => 2]);
+    }
+    if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'CalculateTakeIntoAccountTimeETN')) {
+        \CronTask::Register('GlpiPlugin\Etn\Cron', 'CalculateTakeIntoAccountTimeETN', HOUR_TIMESTAMP,
+                            ['state' => \CronTask::STATE_WAITING, 'mode' => 2]);
+    }
+    if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'SendTakeIntoAccountTimeETN')) {
+        \CronTask::Register('GlpiPlugin\Etn\Cron', 'SendTakeIntoAccountTimeETN', HOUR_TIMESTAMP,
+                            ['state' => \CronTask::STATE_WAITING, 'mode' => 2]);
+    }
 
-   Ldap::updateConfig();
+    Ldap::updateConfig();
 
-   $user = new \User();
-   $users = $user->find();
-   foreach($users as $user) {
-      if(!$user['picture']) continue;
-      $file = $user['picture'];
-      $tag = trim(Document::getImageTag(Rule::getUuid()), '#');
-      $filename = mb_substr($file, strpos($file, '_') + 1);
-      $prefix = mb_substr($file, strpos($file, '/') + 1, strpos($file, '_') - strpos($file, '/'));
-      if(file_exists(GLPI_PICTURE_DIR.'/'.$file)) {
-         copy(GLPI_PICTURE_DIR.'/'.$file, GLPI_TMP_DIR.'/'.$prefix.$filename);
-      } else {
-         continue;
-      }
+    $user = new \User();
+    $users = $user->find();
+    foreach($users as $user) {
+        if(!$user['picture']) continue;
+        $file = $user['picture'];
+        $tag = trim(Document::getImageTag(Rule::getUuid()), '#');
+        $filename = mb_substr($file, strpos($file, '_') + 1);
+        $prefix = mb_substr($file, strpos($file, '/') + 1, strpos($file, '_') - strpos($file, '/'));
+        if(file_exists(GLPI_PICTURE_DIR.'/'.$file)) {
+            copy(GLPI_PICTURE_DIR.'/'.$file, GLPI_TMP_DIR.'/'.$prefix.$filename);
+        } else {
+            continue;
+        }
 
-      // search and add user photo as document
-      $input['_filename']        = [$prefix.$filename];
-      $input['_tag_filename']    = [$tag];
-      $input['_prefix_filename'] = [$prefix];
-      $doc = new \Document();
-      if($curDoc = current($doc->find(['filename' => $filename], [], 1))) {
-         $docID = $curDoc['id'];
-      } else {
-         $docID = $doc->add($input);
-      }
+        // search and add user photo as document
+        $input['_filename']        = [$prefix.$filename];
+        $input['_tag_filename']    = [$tag];
+        $input['_prefix_filename'] = [$prefix];
+        $doc = new \Document();
+        if($curDoc = current($doc->find(['filename' => $filename], [], 1))) {
+            $docID = $curDoc['id'];
+        } else {
+            $docID = $doc->add($input);
+        }
 
-      // add or update users and docs relations
-      $proc = new Process();
-      $proc->fields['users_id'] = $user['id'];
-      $proc->fields['documents_id'] = $docID;
-      if($curProc = current($proc->find(['users_id' => $user['id']], [], 1))) {
-         $proc->fields['id'] = $curProc['id'];
-         $proc->updateInDB(array_keys($proc->fields));
-      } else {
-         $proc->addToDB();
-      }
-   }
+        // add or update users and docs relations
+        $proc = new Process();
+        $proc->fields['users_id'] = $user['id'];
+        $proc->fields['documents_id'] = $docID;
+        if($curProc = current($proc->find(['users_id' => $user['id']], [], 1))) {
+            $proc->fields['id'] = $curProc['id'];
+            $proc->updateInDB(array_keys($proc->fields));
+        } else {
+            $proc->addToDB();
+        }
+    }
 
-   return true;
+    return true;
 }
 
 /**

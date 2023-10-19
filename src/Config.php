@@ -78,6 +78,7 @@ class Config extends \CommonDBTM
     $ong        = [];
     $this->addStandardTab('GlpiPlugin\Etn\Config', $ong, $options);
     $this->addStandardTab('GlpiPlugin\Etn\Itemtype', $ong, $options);
+    $this->addStandardTab('GlpiPlugin\Etn\TakeIntoAccountTime', $ong, $options);
     //$this->addStandardTab('Log', $ong, $options);
 //print_r($ong);die();
     return $ong;

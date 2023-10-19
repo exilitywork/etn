@@ -33,6 +33,7 @@ use GlpiPlugin\Etn\ExpiredSla;
 use GlpiPlugin\Etn\InactionTime_Group_User;
 use GlpiPlugin\Etn\Itemtype;
 use GlpiPlugin\Etn\ItemtypeRecipients;
+use GlpiPlugin\Etn\TakeIntoAccountTimeRecipients;
 
 global $CFG_GLPI, $DB;
 
@@ -106,6 +107,19 @@ if(!empty($_POST) && isset($_POST['add_item_recipients'])) {
 if(!empty($_REQUEST) && isset($_REQUEST['delete_item_recipients'])) {
     $itemtype = new ItemtypeRecipients;
     $itemtype->deleteByCriteria(['id' => $_REQUEST['delete_item_recipients']]);
+}
+
+// add or delete users for report of avg time
+if(!empty($_POST) && isset($_POST['add_taketime_recipients'])) {
+    $itemtype = new TakeIntoAccountTimeRecipients;
+    $itemtype->fields['users_id'] = $_POST['users_id'];
+    if(!(current($itemtype->find(['users_id' => $_POST['users_id']], [], 1)))) {
+        $itemtype->addToDB();
+    }
+}
+if(!empty($_REQUEST) && isset($_REQUEST['delete_taketime_recipients'])) {
+    $itemtype = new TakeIntoAccountTimeRecipients;
+    $itemtype->deleteByCriteria(['id' => $_REQUEST['delete_taketime_recipients']]);
 }
 
 $config = new Config();

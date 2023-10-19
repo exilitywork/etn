@@ -34,6 +34,9 @@ if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access directly to this file");
 }
 
+use DateTime;
+use DateInterval;
+
 class Cron extends \CommonDBTM
 {
 
@@ -60,6 +63,10 @@ class Cron extends \CommonDBTM
                 return array('description' => __('Отправка списка ТОП инициаторов по завкам за месяц', 'etn'));
             case 'CheckInactionTimeTicketETN':
                 return array('description' => __('Проверка времени бездействия по заявкам', 'etn'));
+            case 'CalculateTakeIntoAccountTimeETN':
+                return array('description' => __('Расчет веремени взятия заявок в работу', 'etn'));
+            case 'SendTakeIntoAccountTimeETN':
+                return array('description' => __('Отправка отчета по среднему времени взятия в работу заявок за определенный период', 'etn'));
         }
   
         return array();
@@ -479,6 +486,61 @@ class Cron extends \CommonDBTM
                 }
             }
             $task->addVolume($allCnt);
+            $task->log("Action successfully completed");
+            return true;
+        } catch (Exception $e) {
+            $e->getMessage();
+            print_r($e->getMessage());
+            $task->log($e->getMessage());
+            return false;
+        }
+        return false;
+    }
+
+    static function cronCalculateTakeIntoAccountTimeETN($task) {
+        global $DB;
+
+        try {
+            $cnt = TakeIntoAccountTime::calculateTaketime();
+            $task->addVolume($cnt);
+            $task->log("Action successfully completed");
+            return true;
+        } catch (Exception $e) {
+            $e->getMessage();
+            print_r($e->getMessage());
+            $task->log($e->getMessage());
+            return false;
+        }
+    }
+
+    static function cronSendTakeIntoAccountTimeETN($task) {
+        global $DB;
+
+        $dateBegin = new DateTime();
+        $dateEnd = clone $dateBegin;
+
+        if(\Session::isCron() && $dateBegin->format('w') != 1) {
+            return true;
+        }
+
+        $config = Config::getConfig();
+        
+        $dateBegin->sub(DateInterval::createFromDateString($config['taketime_period'].' seconds'));
+
+        try {
+            $cnt = 0;
+            $recipients = TakeIntoAccountTimeRecipients::getUsers();
+            $params =  [
+                'entities_id' => 0,
+                'avgtime' => TakeIntoAccountTime::calculateAvgTaketime($dateBegin->format('Y-m-d'), $dateEnd->format('Y-m-d')),
+                'datebegin' => $dateBegin->format('Y-m-d'),
+                'dateend' => $dateEnd->format('Y-m-d')
+            ];
+            //print_r($params);die();
+            if(\NotificationEvent::raiseEvent('take_time', new TakeIntoAccountTime(), $params)) {
+                $cnt = 1;
+            }
+            $task->addVolume($cnt);
             $task->log("Action successfully completed");
             return true;
         } catch (Exception $e) {
