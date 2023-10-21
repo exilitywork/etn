@@ -280,48 +280,85 @@ class TakeIntoAccountTime extends \CommonDBTM {
     }
 
     static function updateTime(\Ticket $ticket) {
-        echo '<pre>';
+        global $DB;
+
+        $logs = $DB->request([
+            'SELECT'    => [
+                'date_mod',
+                'new_value'
+            ],
+            'FROM'      => 'glpi_logs',
+            'WHERE'     => [
+                'itemtype' => 'Ticket',
+                'items_id' => $ticket->input['id'],
+                'itemtype_link' => 'User',
+                'linked_action' => 15,
+                'id_search_option' => 5
+            ],
+            'ORDERBY'   => 'date_mod',
+        ]);
         
-        $beginDate = new DateTime(isset($ticket->input['date']) ? $ticket->input['date'] : $ticket->fields['date']);
-        $endDate = clone $beginDate;
-        $delay = isset($ticket->input['takeintoaccount_delay_stat']) ? $ticket->input['takeintoaccount_delay_stat'] : $ticket->fields['takeintoaccount_delay_stat'];
-        $endDate->add(DateInterval::createFromDateString($delay.' seconds'));
-        $taketime = new self;
-        $taketime->fields['id'] = $ticket->input['id'];
-        $taketime->fields['takeintoaccount_time'] = self::businessTime($beginDate, $endDate);
-        $taketime->fields['date'] = $ticket->input['date'];
-        if($curTaketime = current($taketime->find(['id' => $ticket->input['id']], [], 1))) {
-            $taketime->updateInDB(array_keys($taketime->fields));
-        } else {
-            $taketime->addToDB();
+        if(count($logs) > 0) {
+            $assignedUsers = (new \Ticket_User)->find(['tickets_id' => $ticket->input['id'], 'type' => 2]);
+            foreach($logs as $log) {
+                foreach($assignedUsers as $user) {
+                    if(mb_stripos($log['new_value'], '('.$user['users_id'].')')) {
+                        $endDateLog = new DateTime($log['date_mod']);
+                        break;
+                    }
+                }
+            }
+        
+            $beginDate = new DateTime(isset($ticket->input['date']) ? $ticket->input['date'] : $ticket->fields['date']);
+            $endDate = clone $beginDate;
+            $delay = isset($ticket->input['takeintoaccount_delay_stat']) ? $ticket->input['takeintoaccount_delay_stat'] : $ticket->fields['takeintoaccount_delay_stat'];
+            $endDate->add(DateInterval::createFromDateString($delay.' seconds'));
+            if(isset($endDateLog) && $endDate > $endDateLog) $endDate = clone $endDateLog;
+            if($endDate == $beginDate) $endDate->add(DateInterval::createFromDateString('1 seconds'));
+            $taketime = new self;
+            $taketime->fields['id'] = $ticket->input['id'];
+            $taketime->fields['takeintoaccount_time'] = self::businessTime($beginDate, $endDate);
+            $taketime->fields['date'] = $ticket->input['date'];
+            if($curTaketime = current($taketime->find(['id' => $ticket->input['id']], [], 1))) {
+                $taketime->updateInDB(array_keys($taketime->fields));
+            } else {
+                $taketime->addToDB();
+            }
         }
     }
 
     static function calculateTaketime($all = false) {
         global $DB;
-        $iterator = $DB->request([
-            'SELECT'    => [
-                'glpi_tickets.id AS id',
-                'glpi_tickets.takeintoaccount_delay_stat AS takeintoaccount_delay_stat',
-                'glpi_tickets.date AS date'
-            ],
-            'DISTINCT'  => true,
-            'FROM'      => 'glpi_tickets',
-            'WHERE'     => [
-                'glpi_tickets.is_deleted'   => 0,
-                'glpi_tickets.date_mod'         => ['>=', $all ? '1970-01-01 00:00:00' : date('Y-m-d'.' 00:00:00')]
-            ],
-            'ORDERBY'   => 'id'
-        ]);
+        
+        $offset = 0;
+        do {
+            $iterator = $DB->request([
+                'SELECT'    => [
+                    'glpi_tickets.id AS id',
+                    'glpi_tickets.takeintoaccount_delay_stat AS takeintoaccount_delay_stat',
+                    'glpi_tickets.date AS date'
+                ],
+                'DISTINCT'  => true,
+                'FROM'      => 'glpi_tickets',
+                'WHERE'     => [
+                    'glpi_tickets.is_deleted'   => 0,
+                    'glpi_tickets.date_mod'     => ['>=', $all ? '1970-01-01 00:00:00' : date('Y-m-d'.' 00:00:00')]
+                ],
+                'ORDERBY'   => 'id',
+                'START'     => $offset,
+                'LIMIT'     => 1000
+            ]);
 
-        foreach($iterator as $id => $row) {
-            $ticket = new \Ticket;
-            $ticket->input['id'] = $row['id'];
-            $ticket->input['date'] = $row['date'];
-            $ticket->input['takeintoaccount_delay_stat'] = $row['takeintoaccount_delay_stat'];
-            TakeIntoAccountTime::updateTime($ticket);
-        }
-        return count($iterator);
+            foreach($iterator as $id => $row) {
+                $ticket = new \Ticket;
+                $ticket->input['id'] = $row['id'];
+                $ticket->input['date'] = $row['date'];
+                $ticket->input['takeintoaccount_delay_stat'] = $row['takeintoaccount_delay_stat'];
+                TakeIntoAccountTime::updateTime($ticket);
+            }
+            $offset += count($iterator);
+        } while(count($iterator));
+        return $offset;
     }
 
     static function calculateAvgTaketime($dateBegin, $dateEnd) {
