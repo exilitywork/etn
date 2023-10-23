@@ -38,4 +38,5 @@ $count = TakeIntoAccountTime::calculateTaketime(true);
 if ($count) {
     \Session::addMessageAfterRedirect(__('Время взятия в работу всех заявок обновлено! Количество: ').$count);
 }
+
 \Html::back();
