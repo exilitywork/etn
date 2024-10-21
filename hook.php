@@ -38,6 +38,7 @@ use GlpiPlugin\Etn\NotificationTargetInactionTime;
 use GlpiPlugin\Etn\NotificationTargetExpiredSla;
 use GlpiPlugin\Etn\NotificationTargetTicketCategory;
 use GlpiPlugin\Etn\NotificationTargetItemtype;
+use GlpiPlugin\Etn\NotificationTargetProblemInactionTime;
 use GlpiPlugin\Etn\NotificationTargetTakeIntoAccountTime;
 use GlpiPlugin\Etn\TakeIntoAccountTime;
 
@@ -57,6 +58,7 @@ function plugin_etn_install() {
     NotificationTargetTicketCategory::init();
     NotificationTargetItemtype::init();
     NotificationTargetTakeIntoAccountTime::init();
+    NotificationTargetProblemInactionTime::init();
 
     $cron = new \CronTask();
     if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'SendMessageTelegeramETN')) {
@@ -89,6 +91,10 @@ function plugin_etn_install() {
     }
     if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'SendTakeIntoAccountTimeETN')) {
         \CronTask::Register('GlpiPlugin\Etn\Cron', 'SendTakeIntoAccountTimeETN', HOUR_TIMESTAMP,
+                            ['state' => \CronTask::STATE_WAITING, 'mode' => 2]);
+    }
+    if (!$cron->getFromDBbyName('GlpiPlugin\Etn\Cron', 'CheckProblemInactionTimeETN')) {
+        \CronTask::Register('GlpiPlugin\Etn\Cron', 'CheckProblemInactionTimeETN', HOUR_TIMESTAMP,
                             ['state' => \CronTask::STATE_WAITING, 'mode' => 2]);
     }
 
@@ -148,12 +154,12 @@ function plugin_etn_uninstall() {
 }
 
 function plugin_etn_hook_post_item_form(array $params) {
-   $item = $params['item'];
+    $item = $params['item'];
 
-   if (in_array($item->getType(), ['User', 'Ticket', 'Preference'])) {
-      User::showUsernameField($params);
-   }
-   if ($item->getType() == 'ITILCategory') {
-      InactionTime::showTimeField($item);
-   }
+    if (in_array($item->getType(), ['User', 'Ticket', 'Preference'])) {
+        User::showUsernameField($params);
+    }
+    if ($item->getType() == 'ITILCategory') {
+        InactionTime::showTimeField($item);
+    }
 }

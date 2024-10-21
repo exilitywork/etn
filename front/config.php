@@ -33,6 +33,7 @@ use GlpiPlugin\Etn\ExpiredSla;
 use GlpiPlugin\Etn\InactionTime_Group_User;
 use GlpiPlugin\Etn\Itemtype;
 use GlpiPlugin\Etn\ItemtypeRecipients;
+use GlpiPlugin\Etn\ProblemInactionTime;
 use GlpiPlugin\Etn\TakeIntoAccountTimeRecipients;
 
 global $CFG_GLPI, $DB;
@@ -120,6 +121,19 @@ if(!empty($_POST) && isset($_POST['add_taketime_recipients'])) {
 if(!empty($_REQUEST) && isset($_REQUEST['delete_taketime_recipients'])) {
     $itemtype = new TakeIntoAccountTimeRecipients;
     $itemtype->deleteByCriteria(['id' => $_REQUEST['delete_taketime_recipients']]);
+}
+
+// add or delete users for Problem Inaction Time notify
+if(!empty($_POST) && isset($_POST['add_problem_inaction_time_user'])) {
+    $problemInactionTimeUser = new ProblemInactionTime;
+    $problemInactionTimeUser->fields['users_id'] = $_POST['users_id'];
+    if(!(current($problemInactionTimeUser->find(['users_id' => $_POST['users_id']], [], 1)))) {
+        $problemInactionTimeUser->addToDB();
+    }
+}
+if(!empty($_REQUEST) && isset($_REQUEST['delete_problem_inaction_time_user'])) {
+    $problemInactionTimeUser = new ProblemInactionTime;
+    $problemInactionTimeUser->deleteByCriteria(['id' => $_REQUEST['delete_problem_inaction_time_user']]);
 }
 
 $config = new Config();

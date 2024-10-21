@@ -28,7 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
-define('PLUGIN_ETN_VERSION', '1.2.2');
+define('PLUGIN_ETN_VERSION', '1.3.0');
 
 // Minimal GLPI version, inclusive
 define("PLUGIN_ETN_MIN_GLPI_VERSION", "10.0.1");
@@ -80,6 +80,8 @@ function plugin_init_etn()
     $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] += ['GlpiPlugin\Etn\NotificationTargetItemtype' => ['GlpiPlugin\Etn\Itemtype', 'addRecipient']];
     $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] += ['GlpiPlugin\Etn\NotificationTargetTakeIntoAccountTime' => ['GlpiPlugin\Etn\TakeIntoAccountTime', 'addRecipient']];
     $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] += ['NotificationTargetTicket' => ['GlpiPlugin\Etn\TicketCategory', 'addRecipient']];
+    $PLUGIN_HOOKS[Hooks::ADD_RECIPIENT_TO_TARGET]['etn'] += ['GlpiPlugin\Etn\NotificationTargetProblemInactionTime' => ['GlpiPlugin\Etn\ProblemInactionTime', 'addRecipient']];
+
     $CFG_GLPI['notificationtemplates_types'][] = TopRequesters::class;
     $PLUGIN_HOOKS['item_get_events']['etn'] = [NotificationTargetTicket::class => ['GlpiPlugin\Etn\NotificationTargetTicketCategory', 'addEvents']];
     $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['etn'] = ['Ticket' => ['GlpiPlugin\Etn\TicketCategory', 'updateTicket']];

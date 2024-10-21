@@ -297,7 +297,7 @@ class TakeIntoAccountTime extends \CommonDBTM {
             ],
             'ORDERBY'   => 'date_mod',
         ]);
-        
+
         if(count($logs) > 0) {
             $assignedUsers = (new \Ticket_User)->find(['tickets_id' => $ticket->input['id'], 'type' => 2]);
             foreach($logs as $log) {
@@ -318,7 +318,7 @@ class TakeIntoAccountTime extends \CommonDBTM {
             $taketime = new self;
             $taketime->fields['id'] = $ticket->input['id'];
             $taketime->fields['takeintoaccount_time'] = self::businessTime($beginDate, $endDate);
-            $taketime->fields['date'] = $ticket->input['date'];
+            $taketime->fields['date'] = isset($ticket->input['date']) ? $ticket->input['date'] : $ticket->fields['date'];
             if($curTaketime = current($taketime->find(['id' => $ticket->input['id']], [], 1))) {
                 $taketime->updateInDB(array_keys($taketime->fields));
             } else {

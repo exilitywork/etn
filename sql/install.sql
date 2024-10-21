@@ -132,3 +132,10 @@ CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_takeintoaccounttimerecipients`
     `users_id` INT UNSIGNED NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+
+CREATE TABLE IF NOT EXISTS `glpi_plugin_etn_probleminactiontimes`
+(
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `users_id` INT UNSIGNED NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;

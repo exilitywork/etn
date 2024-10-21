@@ -553,5 +553,110 @@ class Cron extends \CommonDBTM
         return false;
     }
 
+    static function cronCheckProblemInactionTimeETN($task) {
+        global $DB;
+
+        $config = Config::getConfig();
+
+        if(\Session::isCron() && date('H') != explode(':', $config['problem_inaction_time_hour'])[0]) {
+            return true;
+        }
+
+        $allCnt = 0;
+        try {
+            $expired = [];
+            $iterator = $DB->request([
+                'SELECT'    => [
+                    'glpi_problems.id AS id',
+                    'glpi_problems.name AS name',
+                    'glpi_problems.date AS date'
+                ],
+                'DISTINCT' => true,
+                'FROM'      => 'glpi_problems',
+                'WHERE'     => [
+                    'glpi_problems.is_deleted'       => 0,
+                    'glpi_problems.status'           => ['<', 5],
+                ],
+                'ORDERBY'   => 'id'
+            ]);
+
+            foreach($iterator as $id => $row) {
+                if(ProblemInactionTime::checkExpiredInactionTime($row['id'])) {
+                    $row['requesters'] = '';
+                    $row['specs'] = '';
+                    $req = $DB->request([
+                        'SELECT'    => [
+                            'glpi_users.realname AS realname',
+                            'glpi_users.firstname AS firstname'
+                        ],
+                        'FROM'      => 'glpi_users',
+                        'LEFT JOIN' => [
+                            'glpi_problems_users' => [
+                                'FKEY' => [
+                                    'glpi_users' => 'id',
+                                    'glpi_problems_users' => 'users_id',
+                                ]
+                            ],
+                        ],
+                        'WHERE'     => [
+                            'glpi_users.is_active'          => 1,
+                            'glpi_problems_users.type'       => 1,
+                            'glpi_problems_users.problems_id' => $row['id']
+                        ]
+                    ]);
+                    foreach($req as $user) {
+                        if($row['requesters']) $row['requesters'] .= '<br>';
+                        $row['requesters'] .= $user['realname'].' '.$user['firstname'];
+                    }
+                    $spec = $DB->request([
+                        'SELECT'    => [
+                            'glpi_users.realname AS realname',
+                            'glpi_users.firstname AS firstname'
+                        ],
+                        'FROM'      => 'glpi_users',
+                        'LEFT JOIN' => [
+                            'glpi_problems_users' => [
+                                'FKEY' => [
+                                    'glpi_users' => 'id',
+                                    'glpi_problems_users' => 'users_id',
+                                ]
+                            ],
+                        ],
+                        'WHERE'     => [
+                            'glpi_users.is_active'          => 1,
+                            'glpi_problems_users.type'       => 2,
+                            'glpi_problems_users.problems_id' => $row['id']
+                        ]
+                    ]);
+                    foreach($spec as $user) {
+                        if($row['specs']) $row['specs'] .= '<br>';
+                        $row['specs'] .= $user['realname'].' '.$user['firstname'];
+                    }
+                    array_push($expired, $row);
+                }
+            }
+            if ($cnt = count($expired)) {
+                $recipients = ProblemInactionTime::getUsers();
+                $params =  [
+                    'entities_id'  => 0,
+                    'probleminactiontime' => $expired,
+                    'recipients' => $recipients,
+                ];
+                if(\NotificationEvent::raiseEvent('problem_inaction_time', new ProblemInactionTime(), $params)) {
+                    $allCnt += $cnt;
+                }
+            }
+            $task->addVolume($allCnt);
+            $task->log("Action successfully completed");
+            return true;
+        } catch (Exception $e) {
+            $e->getMessage();
+            print_r($e->getMessage());
+            $task->log($e->getMessage());
+            return false;
+        }
+        return false;
+    }
+
 }
 ?>

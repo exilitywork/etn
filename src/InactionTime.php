@@ -120,6 +120,7 @@ class InactionTime extends \CommonDBTM {
             'FROM' => 'glpi_itilfollowups',
             'WHERE' => [
                 'items_id' => $id,
+                'itemtype' => 'Ticket',
                 'date_mod' => ['>', $deadline]
             ]
         ]));
@@ -140,6 +141,7 @@ class InactionTime extends \CommonDBTM {
             'FROM' => 'glpi_documents_items',
             'WHERE' => [
                 'items_id' => $id,
+                'itemtype' => 'Ticket',
                 'date_mod' => ['>', $deadline]
             ]
         ]));
@@ -161,7 +163,7 @@ class InactionTime extends \CommonDBTM {
     }
 
     static function addRecipient($item) {
-        
+        echo('<pre>');debug_print_backtrace();die();
         unset($item->target);
         
         $recipients = $item->options['recipients'];
@@ -179,5 +181,6 @@ class InactionTime extends \CommonDBTM {
             }
         }
         //error_log(date('Y-m-d H:i:s')."TEST\n", 3, '/var/www/glpi/files/_log/test.log');
+        //echo('<pre>');print_r($item->target);die();
     }
 }
