@@ -68,10 +68,11 @@ class NotificationTargetProblemInactionTime extends \NotificationTarget {
 
         foreach ($options['probleminactiontime'] as $id => $item) {
             $tmp = [];
-            $tmp['##probleminactiontime.name##']       = $item['name'];
-            $tmp['##probleminactiontime.date##']       = $item['date'];
-            $tmp['##probleminactiontime.requesters##'] = $item['requesters'];
-            $tmp['##probleminactiontime.specs##']      = $item['specs'];
+            $tmp['##probleminactiontime.name##']        = $item['name'];
+            $tmp['##probleminactiontime.date##']        = $item['date'];
+            $tmp['##probleminactiontime.datemod##']     = $item['date_mod'];
+            $tmp['##probleminactiontime.requesters##']  = $item['requesters'];
+            $tmp['##probleminactiontime.specs##']       = $item['specs'];
             $url                                = urldecode($CFG_GLPI['url_base'].'/front/problem.form.php?id='.$item['id']);
             $tmp['##probleminactiontime.id##']        = '<a href="'.$url.'" title="'.$item['name'].'">'.$item['id'].'</a>';
             
@@ -90,12 +91,13 @@ class NotificationTargetProblemInactionTime extends \NotificationTarget {
     */
     function getTags() {
         $tags = [
-            'probleminactiontime.id'           => __('ID (URL)', 'etn'),
-            'probleminactiontime.name'         => __('Title'),
-            'probleminactiontime.date'         => __('Opening date'),
-            'probleminactiontime.requesters'   => __('Инициаторы', 'etn'),
-            'probleminactiontime.specs'        => __('Специалисты', 'etn'),
-            'probleminactiontime.action'       => 'Отчет о нарушении времени бездействия по проблемам за '.date('d-m-Y H:i')
+            'probleminactiontime.id'            => __('ID (URL)', 'etn'),
+            'probleminactiontime.name'          => __('Title'),
+            'probleminactiontime.date'          => __('Opening date'),
+            'probleminactiontime.datemod'       => __('Last change'),
+            'probleminactiontime.requesters'    => __('Инициаторы', 'etn'),
+            'probleminactiontime.specs'         => __('Специалисты', 'etn'),
+            'probleminactiontime.action'        => 'Отчет о нарушении времени бездействия по проблемам за '.date('d-m-Y H:i')
         ];
 
         foreach ($tags as $tag => $label) {
@@ -140,13 +142,15 @@ class NotificationTargetProblemInactionTime extends \NotificationTarget {
                             "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.probleminactiontime.name##&lt;/th&gt;".
                             "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.probleminactiontime.date##&lt;/th&gt;".
                             "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.probleminactiontime.requesters##&lt;/th&gt;".
-                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.probleminactiontime.specs##&lt;/th&gt;&lt;/tr&gt;".
+                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.probleminactiontime.specs##&lt;/th&gt;".
+                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.probleminactiontime.datemod##&lt;/th&gt;&lt;/tr&gt;".
                             "##FOREACHprobleminactiontime##&lt;tr&gt;".
                             "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##probleminactiontime.id##&lt;/td&gt;".
                             "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##probleminactiontime.name##&lt;/td&gt;".
                             "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##probleminactiontime.date##&lt;/td&gt;".
                             "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##probleminactiontime.requesters##&lt;/td&gt;".
-                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##probleminactiontime.specs##&lt;/td&gt;&lt;/tr&gt;".
+                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##probleminactiontime.specs##&lt;/td&gt;".
+                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##probleminactiontime.datemod##&lt;/td&gt;&lt;/tr&gt;".
                             "##ENDFOREACHprobleminactiontime##&lt;/table&gt;&lt;/p&gt;",
                         'content_text'              => '##lang.probleminactiontime.action##'
                     ]
@@ -167,6 +171,32 @@ class NotificationTargetProblemInactionTime extends \NotificationTarget {
                         'notifications_id'          => $notification_id,
                         'mode'                      => 'mailing',
                         'notificationtemplates_id'  => $templates_id
+                    ]
+                );
+            } else {
+                foreach($req as $row) {
+                    $templates_id = $row['id'];
+                }
+                $DB->updateOrDie(
+                    'glpi_notificationtemplatetranslations', [
+                        'content_html'      => 
+                            "&lt;p&gt;##lang.probleminactiontime.action##&lt;table style=\"border-collapse: collapse;\"&gt;&lt;tr&gt;".
+                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.probleminactiontime.id##&lt;/th&gt;".
+                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.probleminactiontime.name##&lt;/th&gt;".
+                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.probleminactiontime.date##&lt;/th&gt;".
+                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.probleminactiontime.requesters##&lt;/th&gt;".
+                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.probleminactiontime.specs##&lt;/th&gt;".
+                            "&lt;th style=\"border: 1px solid black; padding: 3px;\"&gt;##lang.probleminactiontime.datemod##&lt;/th&gt;&lt;/tr&gt;".
+                            "##FOREACHprobleminactiontime##&lt;tr&gt;".
+                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##probleminactiontime.id##&lt;/td&gt;".
+                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##probleminactiontime.name##&lt;/td&gt;".
+                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##probleminactiontime.date##&lt;/td&gt;".
+                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##probleminactiontime.requesters##&lt;/td&gt;".
+                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##probleminactiontime.specs##&lt;/td&gt;".
+                            "&lt;td style=\"border: 1px solid black; padding: 3px;\"&gt;##probleminactiontime.datemod##&lt;/td&gt;&lt;/tr&gt;".
+                            "##ENDFOREACHprobleminactiontime##&lt;/table&gt;&lt;/p&gt;"
+                    ], [
+                        'notificationtemplates_id' => $templates_id
                     ]
                 );
             }

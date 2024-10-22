@@ -28,7 +28,7 @@
  * -------------------------------------------------------------------------
  */
 
-define('PLUGIN_ETN_VERSION', '1.3.0');
+define('PLUGIN_ETN_VERSION', '1.3.1');
 
 // Minimal GLPI version, inclusive
 define("PLUGIN_ETN_MIN_GLPI_VERSION", "10.0.1");

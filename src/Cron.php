@@ -569,7 +569,8 @@ class Cron extends \CommonDBTM
                 'SELECT'    => [
                     'glpi_problems.id AS id',
                     'glpi_problems.name AS name',
-                    'glpi_problems.date AS date'
+                    'glpi_problems.date AS date',
+                    'glpi_problems.date_mod AS date_mod'
                 ],
                 'DISTINCT' => true,
                 'FROM'      => 'glpi_problems',
